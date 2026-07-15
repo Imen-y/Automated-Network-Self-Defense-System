@@ -40,3 +40,35 @@ Desktop.ini
 
 # macOS
 .DS_Store
+
+# LaTeX
+*.aux
+*.log
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+*.out
+*.bbl
+*.blg
+
+# GNS3 runtime files
+GNS3/**/project-files/
+GNS3/**/*.log
+GNS3/**/*.txt
+GNS3/**/*.ghost
+GNS3/**/*.nvram
+GNS3/**/*.lock
+GNS3/**/*.iomem
+GNS3/**/*.bootflash
+GNS3/**/*.rommon_vars
+
+# VS Code
+.vscode/
+
+# Windows
+Thumbs.db
+
+Report/main.pdf

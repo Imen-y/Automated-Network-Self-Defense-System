@@ -1,0 +1,11 @@
+\chapter*{Résumé}
+
+Ce rapport présente la conception et le développement d'un système automatisé d'auto-défense réseau intitulé \textbf{Automated Network Self-Defense System (ANSDS)}. Ce projet a été réalisé dans le cadre d'un stage d'été effectué à l'Agence Nationale de la Cybersécurité (ANCS).
+
+L'objectif principal est de concevoir un système capable de détecter automatiquement des attaques SSH, d'envoyer une alerte en temps réel via Telegram, puis de mettre en œuvre une réponse automatique en bloquant l'adresse IP de l'attaquant sur un routeur Cisco à l'aide de la bibliothèque Netmiko.
+
+Une plateforme de test a été développée sous GNS3 en intégrant un routeur Cisco, un commutateur, un serveur Ubuntu, une machine Kali Linux ainsi qu'un accès Internet. Cette infrastructure permet de reproduire des scénarios d'attaque et de valider les différentes phases du système.
+
+Les développements futurs portent sur l'analyse du trafic réseau avec Wireshark, la détection des attaques, l'automatisation de la réponse, puis la validation complète du système.
+
+\textbf{Mots-clés :} Cybersécurité, SSH, GNS3, Cisco IOS, Netmiko, Wireshark, Python, Auto-Défense Réseau.
