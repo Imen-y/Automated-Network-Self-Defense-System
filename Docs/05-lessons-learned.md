@@ -87,3 +87,16 @@ Improve detection using:
 - Multiple correlated indicators
 
 This strategy was validated by the project supervisor.
+
+---
+
+# Phase 03 Lessons Learned
+
+- Python virtual environments simplify dependency management.
+- Scapy requires administrator privileges for packet capture.
+- Berkeley Packet Filters (BPF) significantly reduce unnecessary traffic processing.
+- TCP SYN packets provide an effective indicator of new SSH connection attempts.
+- A cumulative counter is insufficient for brute-force detection.
+- A sliding time window greatly improves detection accuracy.
+- Incremental validation after each development step simplifies debugging.
+

@@ -184,3 +184,31 @@ git commit -m "Initialize project structure and complete network infrastructure"
 
 git push -u origin main
 ```
+
+---
+
+# Phase 03 Configuration
+
+Operating System:
+- Ubuntu Server 24.04 LTS
+
+Python:
+- Python 3.12
+
+Virtual Environment:
+- Python venv
+
+Packet Library:
+- Scapy 2.7.0
+
+Monitored Interface:
+- ens33
+
+Detection Port:
+- TCP 22
+
+Detection Threshold:
+- 5 SYN packets
+
+Sliding Time Window:
+- 10 seconds

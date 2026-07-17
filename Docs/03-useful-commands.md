@@ -189,3 +189,47 @@ git push
 ```bash
 git log --oneline
 ```
+
+---
+
+# Python Virtual Environment
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+---
+
+# Scapy Installation
+
+```bash
+pip install scapy
+```
+
+---
+
+# Detector Execution
+
+```bash
+sudo ./venv/bin/python ssh_detector.py
+```
+
+---
+
+# SSH Test
+
+```bash
+ssh imen@192.168.10.10
+```
+
+---
+
+# SSH Brute Force Simulation
+
+```bash
+for i in {1..10}; do
+    timeout 1 ssh imen@192.168.10.10 exit >/dev/null 2>&1 &
+done
+wait
+```
