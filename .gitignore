@@ -71,4 +71,5 @@ GNS3/**/*.rommon_vars
 # Windows
 Thumbs.db
 
-Report/main.pdf
+# LaTeX sources
+Report/
