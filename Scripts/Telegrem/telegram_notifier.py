@@ -1,10 +1,15 @@
 import requests
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 # -----------------------------
 # Telegram Configuration
 # -----------------------------
-BOT_TOKEN = "YOUR_BOT_TOKEN"
-CHAT_ID = "YOUR_CHAT_ID"
 
 API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 

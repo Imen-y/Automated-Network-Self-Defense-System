@@ -73,3 +73,5 @@ Thumbs.db
 
 # LaTeX sources
 Report/
+
+.env
