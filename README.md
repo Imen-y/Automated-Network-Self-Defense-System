@@ -1,155 +1,126 @@
 # Automated Network Self-Defense System (ANSDS)
 
-> Automated detection and response system for SSH attacks using Python, Scapy, Netmiko and Cisco IOS.
+## Overview
+
+The Automated Network Self-Defense System (ANSDS) is a final-year engineering project designed to automatically detect SSH brute-force attacks, notify the network administrator in real time, and automatically respond by blocking malicious hosts on a Cisco router.
+
+The project is developed progressively using a modular architecture, allowing each component to be validated independently before system integration.
 
 ---
 
-## Project Overview
+## Project Objectives
 
-This project was developed during my engineering internship.
-
-The objective is to build an Automated Network Self-Defense System capable of detecting malicious SSH connection attempts, sending real-time alerts and automatically isolating attackers using Cisco network automation.
-
-Unlike traditional demonstrations, the project combines:
-
-- Network Administration
-- Python Automation
-- Network Security
-- Cisco IOS
-- Network Monitoring
-- Security Automation (SOAR concepts)
+- Detect SSH brute-force attacks.
+- Analyze network traffic using Scapy.
+- Send real-time security notifications through Telegram.
+- Automatically block attackers using Cisco ACLs and Netmiko.
+- Build a complete automated network self-defense chain.
 
 ---
 
-## Architecture
+## Current Project Status
 
-```
-                    Internet
-                        │
-                    GNS3 NAT
-                        │
-                 Cisco Router (R1)
-               Fa1/0           Fa0/0
-                 WAN             LAN
-                                 │
-                              Switch
-                          ┌──────┴──────┐
-                          │             │
-                 Ubuntu Server      Kali Linux
-                    Victim          Attacker
-```
+| Phase | Description | Status |
+|--------|-------------|--------|
+| Phase 1 | Network Infrastructure | Completed |
+| Phase 2 | SSH Detection Engine | Completed |
+| Phase 3 | Telegram Notification System | Completed |
+| Phase 4 | Cisco Automatic Response | Planned |
+| Phase 5 | Detection Improvements | Planned |
+| Phase 6 | System Integration | Planned |
+| Phase 7 | Final Validation | Planned |
 
 ---
 
-## Project Workflow
+## System Architecture
 
 ```
 Attacker
-
-↓
-
-SSH SYN Flood / Brute Force
-
-↓
-
-Scapy detects abnormal SYN packets
-
-↓
-
-Python Detection Engine
-
-↓
-
-Telegram Notification
-
-↓
-
-Netmiko
-
-↓
-
+    │
+    ▼
+Scapy Packet Capture
+    │
+    ▼
+SSH Detection Engine
+    │
+    ▼
+Telegram Notification Module
+    │
+    ▼
+Netmiko Automation
+    │
+    ▼
 Cisco Router
-
-↓
-
-Automatic ACL Injection
-
-↓
-
-Attacker Blocked
+    │
+    ▼
+Access Control List (ACL)
+    │
+    ▼
+Automated Network Self-Defense System
 ```
 
 ---
 
-## Technologies
-
-| Category | Technology |
-|----------|------------|
-| Network Simulation | GNS3 |
-| Router | Cisco IOS |
-| Operating System | Ubuntu Server 24.04 |
-| Attacker | Kali Linux |
-| Programming Language | Python 3 |
-| Packet Analysis | Scapy |
-| Network Automation | Netmiko |
-| Notifications | Telegram Bot API |
-| Version Control | Git & GitHub |
-| Documentation | LaTeX |
-
----
-
-## Current Progress
-
-- [x] Network Topology
-- [x] Cisco Router Configuration
-- [x] Ubuntu Server Configuration
-- [x] Kali Linux Configuration
-- [x] NAT / Internet Access
-- [x] SSH Server Deployment
-- [ ] Packet Sniffing with Scapy
-- [ ] SYN Detection Engine
-- [ ] Telegram Alert
-- [ ] Automatic Blocking using Netmiko
-- [ ] Final Demonstration
-
----
-
-## Repository Structure
+## Project Structure
 
 ```
 Automated-Network-Self-Defense-System/
 
-│
 ├── Docs/
 ├── GNS3/
+├── Presentation/
 ├── Report/
-├── Screenshots/
+├── Resources/
 ├── Scripts/
-│
+│   ├── Detection/
+│   └── Telegram/
 ├── README.md
 └── .gitignore
 ```
 
 ---
 
-## Screenshots
+## Technologies
 
-(Images will be added during the project.)
+- Python
+- Scapy
+- Requests
+- Telegram Bot API
+- Netmiko (planned)
+- Cisco IOS
+- GNS3
+- Ubuntu Server
+- Kali Linux
+- Git
+- LaTeX
 
 ---
 
-## Future Improvements
+## Completed Features
 
-- Suricata integration
-- Snort rule comparison
-- Grafana dashboard
-- ELK integration
-- Multi-router support
+- Network laboratory deployment
+- SSH protocol analysis
+- TCP SYN detection
+- Sliding time window
+- Threshold-based SSH brute-force detection
+- Telegram Bot integration
+- Automatic security notifications
+- Modular notification subsystem
+
+---
+
+## Upcoming Features
+
+- Cisco router automation
+- Automatic ACL generation
+- Dynamic attacker blocking
+- Hybrid detection improvements
+- Complete ANSDS integration
 
 ---
 
 ## Author
 
-Engineering Internship Project
+Final-Year Engineering Project
 
-2026
+Automated Network Self-Defense System (ANSDS)

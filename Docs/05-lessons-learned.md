@@ -100,3 +100,55 @@ This strategy was validated by the project supervisor.
 - A sliding time window greatly improves detection accuracy.
 - Incremental validation after each development step simplifies debugging.
 
+# Phase 3 Lessons Learned
+
+## Telegram API
+
+The Telegram Bot API provides a simple and reliable mechanism for sending automated security notifications.
+
+---
+
+## Modular Design
+
+Separating the notification logic into telegram_notifier.py significantly improves code maintainability and reusability.
+
+---
+
+## Sliding Time Window
+
+Using a sliding time window reduces false positives and ensures that only recent connection attempts are considered.
+
+---
+
+## Threshold Detection
+
+Using
+
+```
+count == THRESHOLD
+```
+
+instead of
+
+```
+count >= THRESHOLD
+```
+
+prevents duplicate notifications.
+
+---
+
+## Common Issues
+
+- DNS resolution failure.
+- Running Scapy without root privileges.
+- Incorrect variable initialization.
+- timedelta comparison with integers.
+- SSH command waiting for password input.
+- Multiple notifications generated before threshold logic was corrected.
+
+---
+
+## Conclusion
+
+The notification subsystem is now stable and ready to be integrated with the Cisco automatic response module during the next phase.

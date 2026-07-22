@@ -1,26 +1,28 @@
-from scapy.all import sniff, IP, TCP
-import time
+from datetime import datetime, timedelta
+
+from scapy.all import IP, TCP, sniff
+
+from telegram_notifier import send_notification
 
 # -----------------------------
 # Configuration
 # -----------------------------
 SSH_PORT = 22
-THRESHOLD = 5          # Maximum SYN packets allowed
-TIME_WINDOW = 10       # Time window in seconds
+THRESHOLD = 5
+TIME_WINDOW = 10
 
 # Dictionary:
 # Key   -> Source IP
-# Value -> List of timestamps for detected SYN packets
+# Value -> List of timestamps
 attempts = {}
 
 
 def packet_callback(packet):
     """
-    Process each captured packet.
-    Detect repeated TCP SYN packets targeting the SSH service.
+    Process captured packets and detect SSH brute-force attempts.
     """
 
-    # Verify that the packet contains IP and TCP layers
+    # Verify IP and TCP layers
     if not (packet.haslayer(IP) and packet.haslayer(TCP)):
         return
 
@@ -28,23 +30,24 @@ def packet_callback(packet):
     ip_dst = packet[IP].dst
     tcp = packet[TCP]
 
-    # Detect only TCP SYN packets sent to SSH
+    # Detect only TCP SYN packets targeting SSH
     if tcp.dport != SSH_PORT or tcp.flags != "S":
         return
 
-    current_time = time.time()
+    current_time = datetime.now()
 
-    # Create entry for a new source IP
+    # Create an entry for a new source IP
     if ip_src not in attempts:
         attempts[ip_src] = []
 
-    # Store timestamp
+    # Store current timestamp
     attempts[ip_src].append(current_time)
 
     # Keep only timestamps inside the time window
     attempts[ip_src] = [
-        t for t in attempts[ip_src]
-        if current_time - t <= TIME_WINDOW
+        timestamp
+        for timestamp in attempts[ip_src]
+        if current_time - timestamp <= timedelta(seconds=TIME_WINDOW)
     ]
 
     count = len(attempts[ip_src])
@@ -54,15 +57,43 @@ def packet_callback(packet):
         f"Attempts (last {TIME_WINDOW}s): {count}"
     )
 
-    # Trigger alert if threshold is reached
-    if count >= THRESHOLD:
+    # Trigger alert only once when the threshold is reached
+    if count == THRESHOLD:
+
+        alert_message = f"""
+==================================================
+               ANSDS SECURITY ALERT
+==================================================
+
+Attack Type      : SSH Brute Force
+
+Severity         : HIGH
+
+Date             : {current_time.strftime('%Y-%m-%d')}
+Time             : {current_time.strftime('%H:%M:%S')}
+
+Source IP        : {ip_src}
+Destination IP   : {ip_dst}
+
+Destination Port : {SSH_PORT}
+Protocol         : TCP
+
+Attempts         : {count}
+Time Window      : {TIME_WINDOW} seconds
+
+Status           : Detection threshold reached
+
+==================================================
+"""
 
         print("=" * 60)
-        print("[ALERT] Possible SSH Brute Force detected!")
-        print(f"Source IP   : {ip_src}")
-        print(f"Destination : {ip_dst}")
-        print(f"Attempts    : {count}")
-        print(f"Time Window : {TIME_WINDOW} seconds")
+        print("SSH Brute Force detected!")
+
+        if send_notification(alert_message):
+            print("[+] Telegram notification sent successfully.")
+        else:
+            print("[-] Failed to send Telegram notification.")
+
         print("=" * 60)
 
 
@@ -70,7 +101,7 @@ print("[*] Starting packet capture...")
 
 sniff(
     iface="ens33",
-    filter="tcp port 22",
+    filter=f"tcp port {SSH_PORT}",
     prn=packet_callback,
     store=False
 )

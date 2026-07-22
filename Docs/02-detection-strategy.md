@@ -127,3 +127,64 @@ For each captured packet:
 - Lightweight packet inspection
 - Real-time monitoring
 - Simple integration with automated response modules
+
+---
+
+# Telegram Notification Strategy
+
+## Objective
+
+The objective of this phase is to automatically notify the administrator immediately after an SSH brute-force attack has been detected.
+
+The notification module is completely independent from the detection engine.
+
+## Architecture
+
+```
+Attacker
+        │
+        ▼
+TCP SYN Packets
+        │
+        ▼
+Scapy Packet Capture
+        │
+        ▼
+SSH Detection Engine
+        │
+        ▼
+telegram_notifier.py
+        │
+        ▼
+Telegram API
+        │
+        ▼
+Telegram Bot
+```
+
+## Detection Workflow
+
+1. Capture TCP SYN packets.
+2. Count attempts for each source IP.
+3. Apply the sliding time window.
+4. Compare the number of attempts against the configured threshold.
+5. Generate a professional alert.
+6. Send the alert through Telegram.
+
+## Alert Information
+
+Each Telegram notification includes:
+
+- Attack Type
+- Severity
+- Date
+- Time
+- Source IP
+- Destination IP
+- Destination Port
+- Protocol
+- Number of Attempts
+- Time Window
+- Detection Status
+
+This information will be reused during the Cisco automatic response phase.

@@ -212,3 +212,72 @@ Detection Threshold:
 
 Sliding Time Window:
 - 10 seconds
+
+# Phase 3 Configuration History
+
+## Telegram Bot
+
+- Telegram Bot created using BotFather.
+- Bot Token generated.
+- Chat ID retrieved.
+
+---
+
+## Python Environment
+
+- requests installed inside the virtual environment.
+
+---
+
+## Telegram Module
+
+Created:
+
+- telegram_notifier.py
+
+Functions:
+
+- send_notification()
+
+---
+
+## SSH Detector
+
+Integrated Telegram notifications.
+
+Detection pipeline:
+
+TCP SYN Detection
+
+↓
+
+Threshold Verification
+
+↓
+
+Professional Alert Generation
+
+↓
+
+Telegram Notification
+
+---
+
+## Final Parameters
+
+SSH Port
+
+22
+
+Threshold
+
+5 attempts
+
+Sliding Time Window
+
+10 seconds
+
+Notification
+
+Automatic
+

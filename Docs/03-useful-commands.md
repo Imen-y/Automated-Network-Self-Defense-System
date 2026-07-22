@@ -233,3 +233,57 @@ for i in {1..10}; do
 done
 wait
 ```
+
+# Telegram
+
+## Create a Bot
+
+/newbot
+
+## Retrieve Bot Token
+
+/token
+
+## Start Conversation
+
+/start
+
+---
+
+# Python
+
+Install Requests
+
+```bash
+pip install requests
+```
+
+Verify Installation
+
+```bash
+pip show requests
+```
+
+Run Telegram Test
+
+```bash
+python test_telegram.py
+```
+
+Run SSH Detector
+
+```bash
+sudo $(which python) ssh_detector.py
+```
+
+---
+
+# Network Testing
+
+SSH Brute Force Simulation
+
+```bash
+for i in {1..15}; do
+    nc -z 192.168.10.10 22
+done
+```
