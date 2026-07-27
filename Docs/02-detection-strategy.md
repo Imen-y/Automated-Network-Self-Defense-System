@@ -188,3 +188,33 @@ Each Telegram notification includes:
 - Detection Status
 
 This information will be reused during the Cisco automatic response phase.
+
+# Phase 4 – Automated Cisco Response
+
+The ANSDS architecture was extended by introducing an automatic response module based on Netmiko.
+
+The complete workflow is now:
+
+Attacker
+↓
+Scapy
+↓
+SSH Detection
+↓
+Telegram Notification
+↓
+Netmiko
+↓
+Cisco Router
+↓
+Dynamic ACL
+
+After Scapy detects an SSH brute-force attack, the attacker information is forwarded to the Telegram notification module.
+
+Once the notification has been sent successfully, the Cisco module establishes an SSH connection with the router and dynamically creates an Access Control List (ACL) to immediately block the attacker.
+
+The blocking rule follows the format:
+
+deny ip host <SOURCE_IP> any
+
+The Cisco module remains fully reusable and independent from the detection engine.

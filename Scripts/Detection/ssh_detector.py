@@ -2,7 +2,8 @@ from datetime import datetime, timedelta
 
 from scapy.all import IP, TCP, sniff
 
-from telegram_notifier import send_notification
+from Scripts.Telegram.telegram_notifier import send_notification
+from Scripts.Cisco.cisco_acl_manager import block_ip
 
 # -----------------------------
 # Configuration
@@ -91,6 +92,9 @@ Status           : Detection threshold reached
 
         if send_notification(alert_message):
             print("[+] Telegram notification sent successfully.")
+
+            block_ip(ip_src)
+
         else:
             print("[-] Failed to send Telegram notification.")
 

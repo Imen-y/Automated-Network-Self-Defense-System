@@ -135,3 +135,33 @@ Completed tests:
 Result:
 
 The laboratory is fully operational and ready for the attack detection phase.
+
+# Phase 4 – Cisco Automatic Response with Netmiko
+
+## SSH Access to the Cisco Router
+
+Before implementing the automatic response mechanism, the Cisco router was configured to accept SSH connections.
+
+The following validations were successfully completed:
+
+- SSH service enabled on the Cisco router.
+- Local user account created for remote authentication.
+- RSA key pair generated.
+- SSH Version 2 enabled.
+- Successful SSH connection from the Ubuntu Server to the Cisco router.
+
+This validated that the router was ready to accept remote management connections through Netmiko.
+
+---
+
+## Netmiko Connectivity Validation
+
+A first Python test script (`test_netmiko.py`) was developed to verify SSH communication with the Cisco router.
+
+The script successfully retrieved:
+
+- Router hostname
+- Cisco IOS version
+- Interface information
+
+This validation confirmed that Python could remotely manage the Cisco IOS device.

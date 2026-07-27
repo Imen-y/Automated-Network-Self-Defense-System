@@ -5,10 +5,13 @@ __pycache__/
 *.pyd
 *.egg-info/
 
-# Virtual Environments
+# Virtual environments
 venv/
 .venv/
 env/
+
+# Environment variables
+.env
 
 # VS Code
 .vscode/
@@ -20,13 +23,16 @@ env/
 Thumbs.db
 Desktop.ini
 
+# macOS
+.DS_Store
+
 # Logs
 *.log
 
 # Temporary files
 *.tmp
 
-# LaTeX
+# LaTeX build files
 *.aux
 *.bbl
 *.blg
@@ -37,22 +43,6 @@ Desktop.ini
 *.out
 *.synctex.gz
 *.toc
-
-# macOS
-.DS_Store
-
-# LaTeX
-*.aux
-*.log
-*.fls
-*.fdb_latexmk
-*.synctex.gz
-*.toc
-*.lof
-*.lot
-*.out
-*.bbl
-*.blg
 
 # GNS3 runtime files
 GNS3/**/project-files/
@@ -65,13 +55,14 @@ GNS3/**/*.iomem
 GNS3/**/*.bootflash
 GNS3/**/*.rommon_vars
 
-# VS Code
-.vscode/
-
-# Windows
-Thumbs.db
-
-# LaTeX sources
-Report/
-
-.env
+# Generated report
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.out
+*.synctex.gz
+*.toc

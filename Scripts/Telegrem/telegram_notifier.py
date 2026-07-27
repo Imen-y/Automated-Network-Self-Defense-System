@@ -1,5 +1,6 @@
-import requests
 import os
+
+import requests
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -25,6 +26,10 @@ def send_notification(message: str) -> bool:
         bool: True if the notification was sent successfully,
               False otherwise.
     """
+
+    if not BOT_TOKEN or not CHAT_ID:
+        print("Erreur : les variables Telegram ne sont pas configurées dans le fichier .env.")
+        return False
 
     payload = {
         "chat_id": CHAT_ID,

@@ -287,3 +287,34 @@ for i in {1..15}; do
     nc -z 192.168.10.10 22
 done
 ```
+
+# ===========================
+# Phase 4 - Netmiko
+# ===========================
+
+# Install Netmiko
+pip install netmiko
+
+# Verify installation
+pip show netmiko
+
+# Validate SSH connectivity
+python test_netmiko.py
+
+# Create a dynamic ACL
+python test_acl.py
+
+# Remove the ACL
+python test_remove_acl.py
+
+# ===========================
+# Cisco IOS
+# ===========================
+
+show running-config | include hostname
+
+show version | include Cisco IOS
+
+show ip interface brief
+
+show access-lists

@@ -152,3 +152,12 @@ prevents duplicate notifications.
 ## Conclusion
 
 The notification subsystem is now stable and ready to be integrated with the Cisco automatic response module during the next phase.
+
+# Phase 4 Lessons Learned
+
+- Cisco IOS can be remotely managed using Netmiko through SSH.
+- Separating the Cisco module from the detection engine improves code modularity.
+- Moving sensitive information to a .env file prevents credential exposure.
+- try/except/finally blocks improve application robustness during router communication failures.
+- Dynamic Cisco ACLs provide an effective automated response against detected SSH attacks.
+- Keeping each module focused on a single responsibility simplifies maintenance and future extensions.

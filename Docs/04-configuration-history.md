@@ -281,3 +281,29 @@ Notification
 
 Automatic
 
+# Phase 4 Configuration Changes
+
+## New directory
+
+Scripts/Cisco/
+
+## New modules
+
+- cisco_acl_manager.py
+- test_netmiko.py
+- test_acl.py
+- test_remove_acl.py
+
+## New environment variables
+
+ROUTER_HOST
+ROUTER_USERNAME
+ROUTER_PASSWORD
+
+## Security Improvements
+
+- Cisco credentials moved to the .env file.
+- Added .env.example for GitHub.
+- Added requirements.txt.
+- Added complete Netmiko exception handling.
+- Integrated Cisco automatic response into ssh_detector.py.
