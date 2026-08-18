@@ -1,11 +1,42 @@
 \chapter*{Résumé}
+\addcontentsline{toc}{chapter}{Résumé}
 
-Ce rapport présente la conception et le développement d'un système automatisé d'auto-défense réseau intitulé \textbf{Automated Network Self-Defense System (ANSDS)}. Ce projet a été réalisé dans le cadre d'un stage d'été effectué à l'Agence Nationale de la Cybersécurité (ANCS).
+Ce rapport présente la conception et le développement d’un système automatisé
+d’auto-défense réseau, intitulé \textit{Automated Network Self-Defense System}
+(ANSDS). Ce projet a été réalisé dans le cadre d’un stage d’été au sein de
+l’Agence Nationale de la Cybersécurité (ANCS).
 
-L'objectif principal est de concevoir un système capable de détecter automatiquement des attaques SSH, d'envoyer une alerte en temps réel via Telegram, puis de mettre en œuvre une réponse automatique en bloquant l'adresse IP de l'attaquant sur un routeur Cisco à l'aide de la bibliothèque Netmiko.
+L’objectif principal est de concevoir un système capable d’analyser le trafic
+réseau, de détecter automatiquement des comportements suspects, de transmettre
+des alertes de sécurité en temps réel et d’appliquer une réponse automatique
+sur l’infrastructure réseau.
 
-Une plateforme de test a été développée sous GNS3 en intégrant un routeur Cisco, un commutateur, un serveur Ubuntu, une machine Kali Linux ainsi qu'un accès Internet. Cette infrastructure permet de reproduire des scénarios d'attaque et de valider les différentes phases du système.
+Une plateforme expérimentale a été développée sous GNS3 en intégrant un routeur
+Cisco, un commutateur, un serveur Ubuntu, une machine Kali Linux ainsi qu’un
+accès Internet. Cet environnement permet de reproduire différents scénarios
+d’activité réseau et de valider progressivement les fonctionnalités du système.
 
-Les développements futurs portent sur l'analyse du trafic réseau avec Wireshark, la détection des attaques, l'automatisation de la réponse, puis la validation complète du système.
+Le moteur de détection a été développé en Python avec la bibliothèque Scapy.
+Il permet notamment d’analyser les tentatives de connexion SSH et de détecter
+des comportements associés aux scans réseau Nmap. La détection prend en compte
+plusieurs indicateurs tels que les signatures TCP, les ports ciblés, la
+répétition des paquets et la fenêtre temporelle.
 
-\textbf{Mots-clés :} Cybersécurité, SSH, GNS3, Cisco IOS, Netmiko, Wireshark, Python, Auto-Défense Réseau.
+Le système intègre également un mécanisme de corrélation avec l’activité SSH
+afin de renforcer la décision de sécurité. Lorsqu’un événement suspect est
+confirmé, une notification est automatiquement transmise via Telegram.
+Le module Netmiko permet ensuite d’interagir avec le routeur Cisco afin
+d’appliquer dynamiquement une ACL de blocage.
+
+Le blocage est temporaire et sa durée est configurée par le système.
+À son expiration, l’ACL est automatiquement supprimée afin de rétablir l’état
+initial du réseau. Un mécanisme de journalisation permet également de conserver
+une trace des principales étapes du traitement.
+
+Les expérimentations réalisées ont permis de valider la détection des scans
+Nmap SYN, FIN, NULL et Xmas, la corrélation avec l’activité SSH, l’envoi des
+alertes Telegram, l’application du blocage Cisco ainsi que le déblocage
+automatique.
+
+\textbf{Mots-clés :} Cybersécurité, ANSDS, SSH, Nmap, Scapy, GNS3, Cisco IOS,
+Netmiko, Telegram, détection réseau, auto-défense réseau.

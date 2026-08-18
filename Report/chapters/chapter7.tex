@@ -1,0 +1,118 @@
+\chapter{Conclusion générale et perspectives}
+
+\section{Bilan général du projet}
+
+Le projet Automated Network Self-Defense System (ANSDS) avait pour objectif de concevoir et de développer progressivement un système capable d'analyser le trafic réseau, d'identifier des comportements suspects, de transmettre des alertes de sécurité et d'appliquer automatiquement une réponse sur l'infrastructure réseau.
+
+La réalisation du projet a été menée dans un environnement expérimental construit sous GNS3. Celui-ci intègre un routeur Cisco, un commutateur, un serveur Ubuntu et une machine Kali Linux. Cette infrastructure a permis de reproduire différents scénarios réseau dans un environnement contrôlé et de valider progressivement les fonctionnalités développées.
+
+Le développement a suivi une approche incrémentale. Le projet a d'abord porté sur l'observation et l'analyse du trafic SSH, avant de mettre en place un moteur de détection avec Scapy. Celui-ci a ensuite été enrichi par un mécanisme de notification Telegram et par l'automatisation du routeur Cisco à l'aide de Netmiko.
+
+La dernière phase a étendu la capacité de détection aux activités de reconnaissance réseau réalisées avec Nmap. Plusieurs signatures TCP ont été prises en compte, notamment les scans SYN, FIN, NULL et Xmas. La décision de sécurité a été renforcée par l'analyse du comportement de la source, du nombre de ports ciblés, de la répétition des paquets, de la temporalité des événements et de la corrélation avec une activité SSH suspecte.
+
+À l'issue du développement, le système est capable d'enchaîner plusieurs étapes de manière automatisée : détection, analyse, corrélation, notification, blocage temporaire sur le routeur Cisco et suppression automatique de la règle de blocage après expiration de la durée configurée.
+
+
+\section{Principales contributions réalisées}
+
+Les principales contributions du projet peuvent être regroupées autour de plusieurs fonctionnalités complémentaires.
+
+\begin{itemize}
+    \item Mise en place d'un laboratoire réseau expérimental sous GNS3 permettant de reproduire et de contrôler différents scénarios de sécurité.
+
+    \item Analyse du trafic SSH et identification des paquets TCP SYN destinés au port 22.
+
+    \item Développement d'un moteur de détection en Python avec Scapy reposant notamment sur un comptage des tentatives et une fenêtre temporelle glissante.
+
+    \item Mise en place d'un système de notification automatique avec Telegram permettant de transmettre les informations principales associées à un événement détecté.
+
+    \item Développement d'un mécanisme d'administration automatique du routeur Cisco avec Netmiko.
+
+    \item Création dynamique d'ACL permettant de bloquer l'adresse IP identifiée comme source d'une activité suspecte.
+
+    \item Mise en place d'un mécanisme de suppression automatique des ACL après expiration du blocage temporaire.
+
+    \item Intégration d'une gestion des exceptions afin de renforcer la robustesse du module d'administration Cisco.
+
+    \item Extension du moteur de détection aux scans Nmap SYN, FIN, NULL et Xmas.
+
+    \item Mise en place d'une logique de corrélation entre une activité de reconnaissance réseau et une activité SSH suspecte.
+
+    \item Ajout d'un mécanisme de journalisation permettant de conserver une trace chronologique des événements et des décisions prises par le système.
+
+    \item Validation expérimentale progressive des composants individuels puis de la chaîne complète de détection et de réponse automatique.
+\end{itemize}
+
+
+\section{Bilan de la chaîne de défense développée}
+
+L'architecture obtenue à l'issue du projet repose sur une séparation claire des responsabilités entre les différents composants.
+
+Le moteur Scapy assure la capture et l'analyse du trafic réseau. La logique de détection identifie les comportements correspondant aux scénarios étudiés. Le module Telegram assure la transmission des alertes de sécurité. Netmiko permet d'établir la communication avec le routeur Cisco, tandis que le module de gestion des ACL applique et supprime dynamiquement les règles de blocage.
+
+La chaîne finale peut être résumée comme suit :
+
+\begin{center}
+\textbf{
+Détection
+$\rightarrow$
+Analyse comportementale
+$\rightarrow$
+Corrélation
+$\rightarrow$
+Décision de sécurité
+$\rightarrow$
+Notification Telegram
+$\rightarrow$
+Netmiko
+$\rightarrow$
+ACL Cisco
+$\rightarrow$
+Blocage temporaire
+$\rightarrow$
+Déblocage automatique
+}
+\end{center}
+
+Cette organisation modulaire constitue un élément important du système. Elle permet de faire évoluer les mécanismes de détection et de réponse sans remettre en cause l'ensemble de l'architecture.
+
+
+\section{Limites du système}
+
+Malgré les résultats obtenus, la solution développée présente certaines limites liées à son caractère expérimental.
+
+Premièrement, les différentes fonctionnalités ont été développées et validées dans un laboratoire réseau contrôlé sous GNS3. Les résultats obtenus doivent donc être considérés dans le contexte de cet environnement expérimental et ne constituent pas à eux seuls une validation dans une infrastructure de production.
+
+Deuxièmement, les mécanismes de détection reposent sur des signatures et des critères comportementaux définis pour les scénarios étudiés. Les seuils, les fenêtres temporelles et les critères de corrélation peuvent donc nécessiter une adaptation lorsqu'ils sont utilisés dans un environnement présentant des caractéristiques différentes.
+
+Troisièmement, la couverture des comportements malveillants reste limitée aux scénarios étudiés dans le cadre du projet. Le système traite principalement les tentatives suspectes visant SSH ainsi que plusieurs types de scans réseau Nmap.
+
+Enfin, la réponse automatique développée repose sur l'administration d'un équipement Cisco compatible avec le mécanisme d'automatisation mis en place. Une généralisation à d'autres équipements nécessiterait l'adaptation du module de réponse.
+
+Ces limites ne remettent pas en cause les objectifs atteints dans le cadre du stage, mais définissent clairement le périmètre actuel de la solution.
+
+
+\section{Perspectives d'évolution}
+
+Plusieurs évolutions peuvent être envisagées afin d'améliorer les capacités du système ANSDS.
+
+Une première évolution consisterait à étendre la détection à d'autres types de trafic et de comportements réseau. Le moteur pourrait notamment intégrer de nouvelles signatures et de nouveaux scénarios d'attaque afin d'élargir la couverture du système.
+
+Une deuxième évolution concernerait l'amélioration de la corrélation des événements. Plusieurs indicateurs provenant de différentes sources pourraient être combinés afin d'obtenir une décision de sécurité plus précise et de réduire davantage les faux positifs.
+
+Le système pourrait également évoluer vers un mécanisme de classification ou de score de risque permettant d'associer différents niveaux de gravité aux événements détectés. La réponse pourrait alors être adaptée au niveau de menace identifié.
+
+Une autre perspective serait l'intégration d'une interface de supervision permettant de visualiser les événements détectés, les adresses bloquées, les alertes transmises et l'historique des actions réalisées par le système.
+
+Enfin, une évolution vers une architecture intégrée à une plateforme de supervision de sécurité ou à un SIEM permettrait de centraliser les événements et de faciliter l'analyse globale des incidents.
+
+
+\section{Bilan du stage}
+
+La réalisation de ce projet a permis de mettre en pratique plusieurs connaissances acquises dans les domaines des réseaux, de la programmation Python, de la cybersécurité et de l'administration des équipements réseau.
+
+Le travail réalisé a notamment permis d'approfondir l'utilisation de GNS3, Cisco IOS, Wireshark, Python, Scapy et Netmiko. Il a également permis de comprendre les différentes étapes nécessaires à la construction progressive d'un mécanisme de détection et de réponse automatisée.
+
+Au-delà de l'implémentation technique, le projet a également permis d'adopter une démarche expérimentale basée sur l'observation du trafic, la formulation d'hypothèses, la réalisation de scénarios contrôlés, l'analyse des résultats et la validation progressive des fonctionnalités.
+
+Le projet ANSDS constitue ainsi une mise en application concrète des principes de détection et de réponse automatisée dans un environnement réseau contrôlé. Les résultats obtenus fournissent une base fonctionnelle et modulaire pouvant être enrichie par de futurs mécanismes de détection, de corrélation et de réponse.

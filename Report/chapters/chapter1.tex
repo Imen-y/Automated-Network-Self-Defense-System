@@ -1,3 +1,183 @@
 \chapter{Introduction Générale}
 
-Ce chapitre présentera le contexte, la problématique, les objectifs, la méthodologie ainsi que l'organisation générale du rapport.
+\section{Contexte du projet}
+
+L’évolution constante des infrastructures informatiques et leur interconnexion
+croissante exposent les réseaux à différentes formes de menaces. Les attaques
+peuvent notamment viser les services accessibles sur le réseau afin d’identifier les équipements, d’explorer les services disponibles ou de tenter d’obtenir un accès non autorisé.
+
+Dans ce contexte, la surveillance du trafic réseau constitue une composante
+importante de la sécurité des infrastructures. Cependant, la simple observation
+des événements réseau ne suffit pas toujours à assurer une protection efficace.
+Un système de défense doit également être capable d’identifier les comportements
+suspects, d’alerter rapidement l’administrateur et, lorsque cela est nécessaire,
+d’appliquer automatiquement une mesure de protection.
+
+C’est dans cette perspective que s’inscrit le projet
+\textit{Automated Network Self-Defense System} (ANSDS), réalisé dans le cadre
+d’un stage d’été au sein de l’Agence Nationale de la Cybersécurité (ANCS).
+Le projet vise à concevoir progressivement un système capable d’analyser le
+trafic réseau, de détecter différents comportements malveillants et
+d’automatiser une partie de la réponse de sécurité.
+
+L’environnement expérimental a été développé sous GNS3 \cite{gns3_docs} et repose notamment sur
+un routeur Cisco \cite{cisco_ios}, un commutateur, un serveur Ubuntu et une machine Kali Linux.
+Le serveur Ubuntu représente la machine cible tandis que Kali Linux est utilisée
+pour reproduire différents scénarios d’activité offensive. Cette infrastructure
+fournit un environnement contrôlé permettant de développer et de valider les
+différents composants du système.
+
+\section{Problématique}
+
+La détection d’une activité malveillante sur un réseau présente plusieurs
+difficultés. Un événement réseau isolé ne constitue pas nécessairement une
+preuve suffisante d’une attaque. Par exemple, une tentative de connexion TCP
+vers un service SSH peut correspondre à une activité légitime. Une stratégie de
+détection efficace doit donc prendre en compte le comportement global d’une
+source ainsi que plusieurs indicateurs observables.
+
+Dans les premières phases du projet, la surveillance des paquets TCP destinés
+au port SSH a permis de détecter des comportements caractérisés par une
+répétition importante de tentatives de connexion dans une fenêtre temporelle
+donnée. Cette approche a ensuite été étendue afin de prendre en compte les
+comportements de reconnaissance réseau associés aux scans Nmap \cite{nmap_reference}.
+
+Le système analyse notamment les signatures TCP, les ports ciblés, la répétition
+des paquets et la fenêtre temporelle. La corrélation avec l’activité SSH permet
+également de renforcer la décision de sécurité avant de déclencher une réponse
+automatique.
+
+La problématique principale du projet peut ainsi être formulée comme suit :
+
+\begin{quote}
+\textit{Comment concevoir un système automatisé capable de détecter des
+comportements réseau suspects, de réduire les décisions basées sur des
+événements isolés, de corréler plusieurs indicateurs de sécurité et de
+déclencher automatiquement une réponse adaptée sur l’infrastructure réseau ?}
+\end{quote}
+
+Cette problématique implique plusieurs aspects complémentaires : l’analyse du
+trafic réseau, la détection comportementale, la corrélation des événements,
+la notification de sécurité et l’automatisation de la réponse réseau.
+
+\section{Objectifs du projet}
+
+L’objectif général du projet est de concevoir et de développer un système
+automatisé d’auto-défense réseau capable d’assurer une chaîne de traitement
+allant de l’observation du trafic jusqu’à l’application d’une mesure de
+protection.
+
+Les objectifs spécifiques sont les suivants :
+
+\begin{itemize}
+    \item mettre en place un laboratoire réseau contrôlé et reproductible sous GNS3 \cite{gns3_docs} ;
+    \item configurer et valider les communications entre les différents équipements ;
+    \item déployer et valider le service SSH sur le serveur Ubuntu ;
+    \item analyser les caractéristiques observables du trafic TCP associé au protocole SSH \cite{rfc793,rfc4253} ;
+    \item développer un moteur de capture et d’analyse réseau avec Scapy \cite{scapy_docs} ;
+    \item détecter les comportements suspects liés aux tentatives de connexion SSH ;
+    \item utiliser une fenêtre temporelle et une logique comportementale afin de limiter les détections basées sur des paquets isolés ;
+    \item détecter plusieurs types de scans réseau Nmap, notamment SYN, FIN, NULL et Xmas \cite{nmap_reference} ;
+    \item corréler les événements de reconnaissance réseau avec une activité SSH suspecte ;
+    \item transmettre automatiquement une notification de sécurité via Telegram \cite{telegram_bot_api} ;
+    \item automatiser la communication avec le routeur Cisco à l’aide de Netmiko \cite{netmiko_docs} ;
+    \item appliquer dynamiquement une ACL permettant de bloquer temporairement une adresse IP identifiée comme malveillante \cite{cisco_ios} ;
+    \item supprimer automatiquement la règle de blocage après expiration de la durée configurée ;
+    \item journaliser les événements importants afin d’assurer la traçabilité du traitement.
+\end{itemize}
+
+\section{Méthodologie adoptée}
+
+Le développement du système a été réalisé selon une approche progressive.
+Chaque fonctionnalité a d’abord été étudiée et développée séparément, puis
+validée expérimentalement avant son intégration avec les composants précédents.
+
+La première étape a consisté à construire le laboratoire réseau sous GNS3 \cite{gns3_docs} et
+à vérifier la connectivité entre les différents équipements. Le routeur Cisco
+assure le routage et l’accès au réseau externe, tandis que le serveur Ubuntu
+et la machine Kali Linux constituent les principales machines utilisées pour
+les expérimentations.
+
+La deuxième étape a porté sur l’étude du trafic SSH et sur le développement
+du moteur de détection avec Scapy \cite{scapy_docs}. Le système a progressivement évolué de la
+simple capture de paquets vers le filtrage du trafic SSH, la détection des
+paquets TCP SYN, le comptage des tentatives et l’utilisation d’une fenêtre
+temporelle glissante.
+
+La troisième étape a permis d’ajouter un mécanisme de notification avec
+Telegram \cite{telegram_bot_api}. Le module de notification a été conçu séparément du moteur de
+détection afin de conserver une architecture modulaire et de faciliter son
+intégration avec les futurs mécanismes de réponse.
+
+La quatrième étape a porté sur l’automatisation du routeur Cisco avec
+Netmiko \cite{netmiko_docs}. Cette intégration permet au système d’appliquer dynamiquement une
+ACL correspondant à l’adresse IP identifiée comme source d’une activité
+suspecte.
+
+Enfin, la cinquième étape a étendu le mécanisme de détection aux scans réseau
+Nmap \cite{nmap_reference}. Quatre signatures TCP ont été étudiées : SYN, FIN, NULL et Xmas. La
+décision de sécurité ne repose pas uniquement sur un paquet isolé, mais sur
+l’analyse du comportement d’une même source, du nombre de ports ciblés et de
+la temporalité des événements.
+
+Une corrélation avec l’activité SSH permet ensuite de renforcer la décision
+avant le déclenchement de la réponse automatisée.
+
+La validation a été effectuée progressivement au moyen de scénarios contrôlés
+permettant de vérifier individuellement les différentes fonctionnalités puis
+leur enchaînement dans la chaîne complète de défense.
+
+\section{Technologies et outils utilisés}
+
+La réalisation du projet s’appuie sur plusieurs technologies complémentaires.
+
+\begin{itemize}
+    \item \textbf{GNS3} est utilisé pour construire et reproduire l’environnement
+    réseau expérimental \cite{gns3_docs}.
+
+    \item \textbf{Cisco IOS} est utilisé sur le routeur chargé du routage,
+    du NAT et de l’application des ACL destinées au blocage des adresses IP \cite{cisco_ios}.
+
+    \item \textbf{Ubuntu Server} constitue la machine cible et héberge
+    notamment le service OpenSSH \cite{rfc4253}.
+
+    \item \textbf{Kali Linux} est utilisée comme machine d’expérimentation
+    permettant de reproduire les différents comportements réseau étudiés.
+
+    \item \textbf{Wireshark} est utilisé pour l’observation et l’analyse
+    du trafic réseau \cite{wireshark_docs}.
+
+    \item \textbf{Python} constitue le langage principal de développement
+    du système \cite{python_docs}.
+
+    \item \textbf{Scapy} permet de capturer et d’analyser les paquets réseau
+    afin d’identifier les signatures et comportements recherchés \cite{scapy_docs}.
+
+    \item \textbf{Telegram Bot API} est utilisée pour transmettre les alertes
+    de sécurité \cite{telegram_bot_api}.
+
+    \item \textbf{Netmiko} permet d’automatiser les interactions avec le
+    routeur Cisco et d’appliquer les mesures de protection réseau \cite{netmiko_docs}.
+\end{itemize}
+
+L’utilisation combinée de ces technologies permet de construire une
+architecture dans laquelle chaque composant possède une responsabilité
+clairement définie.
+
+\section{Organisation du rapport}
+
+Le présent rapport est organisé en sept chapitres correspondant aux principales étapes de conception, de développement, d'intégration et d'évolution du système Automated Network Self-Defense System (ANSDS).
+
+Le chapitre 1, intitulé \textit{Introduction Générale}, présente le contexte du projet, la problématique étudiée, les objectifs fixés, la méthodologie adoptée ainsi que les principales technologies utilisées.
+
+Le chapitre 2, intitulé \textit{Conception du Laboratoire Réseau}, présente la mise en place de l'environnement expérimental sous GNS3. Il décrit l'architecture du laboratoire, les équipements utilisés, le plan d'adressage IP, la configuration du NAT ainsi que les différentes validations de connectivité et du service SSH.
+
+Le chapitre 3, intitulé \textit{Développement du moteur de détection SSH avec Scapy}, présente l'étude du trafic SSH et la construction progressive du moteur de détection. Il décrit notamment la capture des paquets, le filtrage du trafic SSH, la détection des paquets TCP SYN, le comptage des tentatives et l'utilisation d'une fenêtre temporelle glissante.
+
+Le chapitre 4, intitulé \textit{Développement de la notification et de la réponse automatisée}, présente la mise en place du système de notification Telegram ainsi que les premiers mécanismes de réponse automatisée. Il décrit notamment la création du bot Telegram, le développement du module de notification, l'intégration avec le moteur de détection, ainsi que la mise en place initiale de l'automatisation Cisco avec Netmiko.
+
+Le chapitre 5, intitulé \textit{Intégration et automatisation de la réponse sur le routeur Cisco}, approfondit l'intégration de Netmiko avec le routeur Cisco. Il présente la préparation du routeur, la récupération automatique de ses informations, le développement du module de gestion des ACL, la création et la suppression dynamiques des règles de blocage, la gestion des exceptions ainsi que la validation complète de la chaîne de détection et de réponse.
+
+Le chapitre 6, intitulé \textit{Détection des scans réseau et corrélation des événements}, présente l'évolution du système vers une stratégie de détection multi-indicateurs. Il traite des scans Nmap SYN, FIN, NULL et Xmas, de l'analyse comportementale, de la corrélation avec l'activité SSH, de la notification Telegram, du blocage temporaire sur Cisco, de l'expiration automatique du blocage et de la journalisation des événements.
+
+Enfin, le chapitre 7, intitulé \textit{Conclusion générale et perspectives}, présente le bilan global du projet, les principales contributions réalisées, les limites de la solution développée, les perspectives d'évolution ainsi que les principaux acquis du stage.

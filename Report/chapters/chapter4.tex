@@ -1,96 +1,90 @@
-\chapter{Développement du système de notification Telegram}
+\chapter{Développement de la notification et de la réponse automatisée}
 
 \section{Introduction}
 
-Après le développement et la validation du moteur de détection SSH présenté dans le chapitre précédent, l'étape suivante du projet Automated Network Self-Defense System (ANSDS) consiste à informer automatiquement l'administrateur dès qu'un comportement suspect est détecté sur le réseau.
+Après le développement et la validation du moteur de détection SSH présenté dans le chapitre précédent, l'étape suivante du projet Automated Network Self-Defense System (ANSDS) consiste à mettre en place les premiers mécanismes de réponse aux événements de sécurité détectés.
 
-La simple détection d'une attaque ne constitue pas une réponse suffisante face aux menaces actuelles. Un système de sécurité efficace doit être capable de transmettre rapidement les informations relatives à l'incident afin de réduire le temps de réaction de l'administrateur. Cette capacité représente une étape essentielle avant la mise en œuvre de mécanismes de réponse automatique tels que le blocage dynamique d'une adresse IP malveillante.
+La simple détection d'une attaque ne constitue pas une réponse suffisante face aux menaces actuelles. Un système de sécurité efficace doit être capable de transmettre rapidement les informations relatives à l'incident afin de réduire le temps de réaction de l'administrateur, puis d'appliquer automatiquement une mesure de protection lorsque cela est nécessaire.
 
-Dans ce projet, le service de messagerie Telegram a été retenu comme solution de notification. Telegram met à disposition une interface de programmation (Telegram Bot API) permettant à une application d'envoyer automatiquement des messages vers une conversation privée ou un groupe de discussion. Cette API est simple à intégrer dans une application Python et offre un moyen fiable de transmettre des alertes en temps réel.
+Dans cette phase, deux mécanismes complémentaires sont développés. Le premier est un système de notification basé sur Telegram permettant d'informer automatiquement l'administrateur lorsqu'un comportement suspect est détecté. Le second repose sur Netmiko et permet d'automatiser les interactions avec le routeur Cisco afin d'appliquer dynamiquement une ACL de blocage.
 
-Afin de conserver une architecture logicielle modulaire, le système de notification a été développé sous la forme d'un composant indépendant du moteur de détection. Cette approche facilite la maintenance du projet, améliore la réutilisabilité du code et prépare l'intégration du futur module de réponse automatique basé sur Netmiko.
+Afin de conserver une architecture logicielle modulaire, les différents composants sont développés séparément puis intégrés progressivement au moteur de détection développé avec Scapy. Cette séparation facilite la maintenance, la réutilisation du code et l'évolution future du système.
 
-Le développement du système de notification a été réalisé de manière progressive. Chaque fonctionnalité a été implémentée puis validée individuellement avant son intégration au moteur de détection développé avec Scapy. Cette méthode garantit la fiabilité de chaque composant et limite les risques d'erreur lors de l'évolution du système.
+Dans ce chapitre, nous présentons successivement le développement du système de notification Telegram, son intégration avec le moteur de détection, la mise en place de l'automatisation Cisco avec Netmiko, la création et la suppression dynamique des ACL, la gestion des exceptions ainsi que les validations expérimentales réalisées.
 
-Dans ce chapitre, nous présentons successivement les objectifs poursuivis, le fonctionnement de Telegram Bot API, la création du bot, le développement du module Python de notification, son intégration avec le moteur de détection SSH, les validations expérimentales réalisées ainsi que les résultats obtenus.
+\section{Objectifs du chapitre}
 
-\section{Objectifs de la phase}
-
-Cette phase constitue la première étape du développement du mécanisme de réponse du projet ANSDS.
+Cette phase constitue une étape importante dans l'évolution du système ANSDS, puisqu'elle permet de passer d'un système capable uniquement de détecter une activité suspecte à un système capable également de notifier l'administrateur et d'appliquer automatiquement une mesure de protection.
 
 Les objectifs principaux sont les suivants :
 
 \begin{itemize}
-
-\item créer un bot Telegram destiné à recevoir les alertes de sécurité ;
-
-\item récupérer les informations d'authentification nécessaires à l'utilisation de Telegram Bot API ;
-
-\item développer un module Python réutilisable permettant d'envoyer automatiquement des notifications ;
-
-\item intégrer ce module au moteur de détection SSH développé avec Scapy ;
-
-\item construire un message d'alerte contenant les informations essentielles relatives à l'attaque détectée ;
-
-\item transmettre automatiquement une notification dès que le seuil de détection est atteint ;
-
-\item concevoir une architecture modulaire compatible avec le futur module de réponse automatique basé sur Netmiko ;
-
-\item valider expérimentalement le bon fonctionnement de chaque fonctionnalité développée.
-
+    \item créer un bot Telegram destiné à recevoir les alertes de sécurité ;
+    \item développer un module Python réutilisable permettant d'envoyer automatiquement des notifications ;
+    \item intégrer ce module au moteur de détection SSH développé avec Scapy ;
+    \item construire un message d'alerte contenant les informations essentielles relatives à l'attaque détectée ;
+    \item transmettre automatiquement une notification dès que le seuil de détection est atteint ;
+    \item préparer le routeur Cisco à l'automatisation distante ;
+    \item installer et configurer la bibliothèque Netmiko ;
+    \item développer un module Python dédié à la gestion des ACL Cisco ;
+    \item appliquer dynamiquement une ACL permettant de bloquer une adresse IP identifiée comme malveillante ;
+    \item supprimer automatiquement l'ACL après expiration de la durée de blocage ;
+    \item gérer les erreurs pouvant survenir lors des communications avec le routeur ;
+    \item intégrer l'ensemble des composants dans une chaîne de réponse automatisée ;
+    \item valider expérimentalement le fonctionnement de chaque fonctionnalité.
 \end{itemize}
 
-À l'issue de cette phase, le système est capable de transmettre automatiquement une notification détaillée à l'administrateur dès qu'une attaque SSH est détectée. Cette fonctionnalité constitue une étape essentielle dans la construction d'un système complet d'auto-défense réseau, puisqu'elle établit le lien entre le moteur de détection et les futurs mécanismes de réponse automatique.
+\section{Développement du système de notification Telegram}
 
-\section{Présentation de Telegram Bot API}
+\subsection{Présentation de Telegram Bot API}
 
-Telegram est une plateforme de messagerie instantanée proposant une interface de programmation appelée Telegram Bot API. Cette interface permet à des applications externes d'interagir automatiquement avec le service Telegram sans intervention humaine.
+Telegram est une plateforme de messagerie instantanée proposant une interface de programmation appelée Telegram Bot API. Cette interface permet à des applications externes d'interagir automatiquement avec le service Telegram sans intervention humaine \cite{telegram_bot_api}.
 
-Le principe repose sur la création d'un bot, c'est-à-dire un compte spécial administré par une application. Contrairement à un utilisateur classique, un bot peut recevoir des commandes, envoyer des messages, transmettre des fichiers et communiquer automatiquement avec les utilisateurs autorisés.
+Le principe repose sur la création d'un bot, c'est-à-dire un compte spécial administré par une application. Contrairement à un utilisateur classique, un bot peut recevoir des commandes, envoyer des messages, transmettre des fichiers et communiquer automatiquement avec les utilisateurs autorisés \cite{telegram_bot_api}.
 
 L'accès à Telegram Bot API repose sur un jeton d'authentification (\textit{Bot Token}) généré lors de la création du bot. Ce jeton identifie de manière unique l'application et autorise l'envoi de requêtes vers les serveurs Telegram.
 
 Chaque conversation Telegram possède également un identifiant numérique (\textit{Chat ID}) permettant de spécifier précisément le destinataire des notifications. L'association du Bot Token et du Chat ID permet ainsi au système de transmettre automatiquement les alertes de sécurité à l'administrateur.
 
-Dans le cadre du projet ANSDS, Telegram est utilisé exclusivement comme canal de notification. Toutes les informations produites par le moteur de détection sont transmises au bot afin d'informer immédiatement l'administrateur d'une activité suspecte observée sur le réseau.
+Dans le cadre du projet ANSDS, Telegram est utilisé exclusivement comme canal de notification. Les informations produites par le moteur de détection sont transmises au bot afin d'informer immédiatement l'administrateur d'une activité suspecte observée sur le réseau.
 
-\section{Création du Bot Telegram}
+\subsection{Création du Bot Telegram}
 
 La première étape du développement consiste à créer un bot Telegram dédié aux notifications de sécurité.
 
 Telegram met à disposition un service officiel nommé BotFather permettant de créer et d'administrer les bots. Après avoir lancé la commande \texttt{/newbot}, l'utilisateur choisit un nom d'affichage ainsi qu'un nom d'utilisateur unique se terminant obligatoirement par le suffixe \texttt{bot}.
 
-Une fois la création terminée, BotFather génère automatiquement le Bot Token nécessaire à l'authentification auprès de Telegram Bot API.
+Une fois la création terminée, BotFather génère automatiquement le Bot Token nécessaire à l'authentification auprès de Telegram Bot API \cite{telegram_bot_api}.
 
 La Figure~\ref{fig:telegram_bot_creation} présente la création du bot utilisé dans le cadre de ce projet.
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.92\textwidth]{figures/Fig-03-08_Telegram_Bot_Creation.png}
-\caption{Création du bot Telegram avec BotFather}
-\label{fig:telegram_bot_creation}
+    \centering
+    \includegraphics[width=0.92\textwidth]{figures/Fig-03-08_Telegram_Bot_Creation.png}
+    \caption{Création du bot Telegram avec BotFather}
+    \label{fig:telegram_bot_creation}
 \end{figure}
 
 Le Bot Token constitue une information sensible puisqu'il permet d'accéder au bot et d'envoyer des messages en son nom. Il doit donc être conservé de manière confidentielle et ne jamais être diffusé dans un dépôt Git public.
 
 Après la création du bot, une première conversation privée est ouverte avec celui-ci à l'aide de la commande \texttt{/start}. Cette étape permet à Telegram d'associer un identifiant de conversation (\textit{Chat ID}) au futur destinataire des notifications.
 
-Le Chat ID est ensuite récupéré à l'aide de la méthode \texttt{getUpdates} proposée par Telegram Bot API.
+Le Chat ID est ensuite récupéré à l'aide de la méthode \texttt{getUpdates} proposée par Telegram Bot API \cite{telegram_bot_api}.
 
 La Figure~\ref{fig:telegram_chat_id} présente la récupération de cet identifiant.
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.92\textwidth]{figures/Fig-03-09_Telegram_Chat_ID.png}
-\caption{Récupération du Chat ID}
-\label{fig:telegram_chat_id}
+    \centering
+    \includegraphics[width=0.92\textwidth]{figures/Fig-03-09_Telegram_Chat_ID.png}
+    \caption{Récupération du Chat ID}
+    \label{fig:telegram_chat_id}
 \end{figure}
 
-À l'issue de cette première étape, toutes les informations nécessaires à la communication avec Telegram Bot API sont disponibles. Le développement du module Python de notification peut alors commencer.
+À l'issue de cette étape, toutes les informations nécessaires à la communication avec Telegram Bot API sont disponibles. Le développement du module Python de notification peut alors commencer.
 
-\section{Développement du module de notification}
+\subsection{Développement du module de notification}
 
-Une fois les paramètres d'authentification obtenus, l'étape suivante consiste à développer un module Python capable de communiquer avec Telegram Bot API.
+Une fois les paramètres d'authentification obtenus, l'étape suivante consiste à développer un module Python capable de communiquer avec Telegram Bot API \cite{telegram_bot_api}.
 
 Plutôt que d'intégrer directement les appels HTTP à l'intérieur du moteur de détection, un composant indépendant nommé \texttt{telegram\_notifier.py} est développé. Cette séparation des responsabilités permet de rendre le projet plus modulaire et facilite les évolutions futures.
 
@@ -107,10 +101,10 @@ Une première validation est réalisée afin de vérifier le fonctionnement du m
 La Figure~\ref{fig:first_telegram_message} présente la validation du premier message envoyé depuis Python.
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.92\textwidth]{figures/Fig-03-10_First_Telegram_Test_Message.png}
-\caption{Validation du premier message envoyé via Telegram Bot API}
-\label{fig:first_telegram_message}
+    \centering
+    \includegraphics[width=0.92\textwidth]{figures/Fig-03-10_First_Telegram_Test_Message.png}
+    \caption{Validation du premier message envoyé via Telegram Bot API}
+    \label{fig:first_telegram_message}
 \end{figure}
 
 Après cette première validation, un second script est utilisé afin de vérifier que toutes les communications passent désormais exclusivement par le module \texttt{telegram\_notifier.py}.
@@ -120,15 +114,15 @@ Cette étape confirme que la logique de communication est entièrement centralis
 La Figure~\ref{fig:telegram_module_validation} présente cette validation.
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.92\textwidth]{figures/Fig-03-11_Telegram_Module_Validation.png}
-\caption{Validation du module Python de notification}
-\label{fig:telegram_module_validation}
+    \centering
+    \includegraphics[width=0.92\textwidth]{figures/Fig-03-11_Telegram_Module_Validation.png}
+    \caption{Validation du module Python de notification}
+    \label{fig:telegram_module_validation}
 \end{figure}
 
-\section{Intégration avec le moteur de détection SSH}
+\subsection{Intégration avec le moteur de détection SSH}
 
-Après la validation indépendante du module de notification, celui-ci est intégré au moteur de détection développé avec Scapy.
+Après la validation indépendante du module de notification, celui-ci est intégré au moteur de détection développé avec Scapy \cite{scapy_docs}.
 
 L'objectif consiste à automatiser entièrement l'envoi des alertes. Désormais, aucune intervention humaine n'est nécessaire entre la détection d'une attaque et la transmission de la notification.
 
@@ -145,13 +139,13 @@ Le détecteur identifie correctement les paquets TCP SYN, incrémente le compteu
 La Figure~\ref{fig:ssh_notification_integration} présente le fonctionnement complet de cette intégration.
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.92\textwidth]{figures/Fig-03-12_SSH_Detection_With_Telegram_Notification.png}
-\caption{Intégration du module Telegram au moteur de détection SSH}
-\label{fig:ssh_notification_integration}
+    \centering
+    \includegraphics[width=0.92\textwidth]{figures/Fig-03-12_SSH_Detection_With_Telegram_Notification.png}
+    \caption{Intégration du module Telegram au moteur de détection SSH}
+    \label{fig:ssh_notification_integration}
 \end{figure}
 
-\section{Construction d'une alerte professionnelle}
+\subsection{Construction d'une alerte professionnelle}
 
 La première version du système de notification envoyait uniquement un message générique indiquant qu'une attaque SSH avait été détectée.
 
@@ -161,26 +155,28 @@ Le contenu de la notification a donc été enrichi afin de transmettre directeme
 
 Chaque notification contient désormais le type d'attaque détectée, le niveau de gravité, la date et l'heure de détection, les adresses IP source et destination, le port cible, le protocole utilisé, le nombre de tentatives observées ainsi que la durée de la fenêtre temporelle utilisée par le moteur de détection.
 
-Cette structure présente également un intérêt majeur pour la suite du projet. Les informations générées par le moteur de détection pourront être directement réutilisées par le futur module Netmiko afin de construire automatiquement les règles ACL destinées à bloquer l'adresse IP malveillante sur le routeur Cisco.
+Cette structure présente également un intérêt majeur pour la suite du projet. Les informations générées par le moteur de détection pourront être directement réutilisées par le module Netmiko afin de construire automatiquement les règles ACL destinées à bloquer l'adresse IP malveillante sur le routeur Cisco.
 
 La Figure~\ref{fig:professional_alert} présente le format final de la notification générée automatiquement par le système.
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.92\textwidth]{figures/Fig-03-13_Professional_Telegram_Alert.png}
-\caption{Notification de sécurité générée automatiquement par l'ANSDS}
-\label{fig:professional_alert}
+    \centering
+    \includegraphics[width=0.92\textwidth]{figures/Fig-03-13_Professional_Telegram_Alert.png}
+    \caption{Notification de sécurité générée automatiquement par l'ANSDS}
+    \label{fig:professional_alert}
 \end{figure}
 
-\section{Validation expérimentale}
+\section{Validation du système de notification}
+
+\subsection{Validation expérimentale}
 
 Une série de tests a été réalisée afin de vérifier le bon fonctionnement du système de notification développé durant cette phase. Chaque fonctionnalité a été validée individuellement avant son intégration complète au moteur de détection SSH.
 
-La première validation a consisté à vérifier la création du bot Telegram ainsi que l'obtention des paramètres nécessaires à la communication avec Telegram Bot API. Le Bot Token et le Chat ID ont été récupérés avec succès, permettant ainsi au programme Python de communiquer avec les serveurs Telegram.
+La première validation a consisté à vérifier la création du bot Telegram ainsi que l'obtention des paramètres nécessaires à la communication avec Telegram Bot API \cite{telegram_bot_api}. Le Bot Token et le Chat ID ont été récupérés avec succès, permettant ainsi au programme Python de communiquer avec les serveurs Telegram.
 
 Une seconde série de tests a permis de vérifier le fonctionnement du module \texttt{telegram\_notifier.py}. Plusieurs messages de test ont été transmis afin de confirmer la capacité du module à envoyer automatiquement des notifications sans intervention de l'utilisateur.
 
-Après cette validation indépendante, le module de notification a été intégré au moteur de détection développé avec Scapy. Des scénarios simulant une attaque SSH ont ensuite été exécutés depuis la machine Kali Linux.
+Après cette validation indépendante, le module de notification a été intégré au moteur de détection développé avec Scapy \cite{scapy_docs}. Des scénarios simulant une attaque SSH ont ensuite été exécutés depuis la machine Kali Linux.
 
 À chaque tentative de connexion, le détecteur capture les paquets TCP SYN, met à jour le compteur associé à l'adresse IP source puis compare le nombre de tentatives au seuil configuré.
 
@@ -188,32 +184,194 @@ Lorsque le seuil est atteint à l'intérieur de la fenêtre temporelle glissante
 
 Les différents essais réalisés confirment le bon fonctionnement de l'ensemble de la chaîne de traitement. Les notifications sont envoyées uniquement lorsqu'une activité réellement suspecte est détectée, évitant ainsi la génération d'alertes inutiles.
 
-\section{Analyse des résultats}
+\subsection{Analyse des résultats}
 
-Les expérimentations réalisées démontrent que l'intégration de Telegram Bot API constitue une solution simple, fiable et efficace pour assurer la notification automatique des incidents de sécurité.
+Les expérimentations réalisées démontrent que l'intégration de Telegram Bot API constitue une solution simple, fiable et efficace pour assurer la notification automatique des incidents de sécurité \cite{telegram_bot_api}.
 
 La séparation entre le moteur de détection et le module de notification améliore considérablement l'architecture logicielle du projet. Chaque composant possède désormais une responsabilité clairement définie, ce qui facilite la maintenance et limite les dépendances entre les différents modules.
 
-Le développement d'un module Python dédié permet également de centraliser l'ensemble des communications avec Telegram. Toute évolution future du système de notification pourra ainsi être réalisée sans modifier les algorithmes de détection développés avec Scapy.
+Le développement d'un module Python dédié permet également de centraliser l'ensemble des communications avec Telegram. Toute évolution future du système de notification pourra ainsi être réalisée sans modifier les algorithmes de détection développés avec Scapy \cite{scapy_docs}.
 
-L'amélioration apportée au mécanisme de déclenchement des alertes constitue également un résultat important. Le remplacement d'une condition de type \texttt{count >= THRESHOLD} par une comparaison stricte \texttt{count == THRESHOLD} permet d'éviter l'envoi de notifications multiples lors d'une même attaque tout en conservant une excellente réactivité.
+L'amélioration apportée au mécanisme de déclenchement des alertes constitue également un résultat important. Le remplacement d'une condition de type \texttt{count >= THRESHOLD} par une comparaison stricte \texttt{count == THRESHOLD} permet d'éviter l'envoi de notifications multiples lors d'une même attaque tout en conservant une bonne réactivité.
 
-L'enrichissement du contenu des notifications représente une étape essentielle dans la construction du système d'auto-défense réseau. Les informations transmises ne servent plus uniquement à informer l'administrateur, mais constituent également les données qui seront exploitées par le futur module de réponse automatique.
+L'enrichissement du contenu des notifications représente une étape essentielle dans la construction du système d'auto-défense réseau. Les informations transmises ne servent plus uniquement à informer l'administrateur, mais constituent également les données qui seront exploitées par le module de réponse automatique.
 
 Cette conception permet de préparer naturellement l'intégration de Netmiko sans modifier l'architecture existante. Les informations relatives à l'attaque pourront être directement utilisées pour générer dynamiquement les règles de filtrage sur le routeur Cisco.
 
-Les résultats obtenus confirment ainsi la pertinence de l'architecture retenue ainsi que la faisabilité de la chaîne complète de détection et de notification développée au cours de cette phase.
+\section{Développement du mécanisme de réponse automatique}
+
+Après la mise en place du système de notification, l'étape suivante consiste à automatiser la réponse réseau. L'objectif est de permettre au système ANSDS de communiquer automatiquement avec le routeur Cisco et d'appliquer une mesure de protection lorsqu'une adresse IP malveillante est identifiée.
+
+\subsection{Préparation du routeur Cisco}
+
+Avant d'automatiser les opérations de configuration, le routeur Cisco doit être préparé afin d'autoriser une connexion distante sécurisée depuis le serveur Ubuntu.
+
+Cette préparation constitue une étape indispensable pour permettre au module Netmiko d'établir une session SSH avec le routeur et d'exécuter les commandes nécessaires à la gestion des ACL \cite{netmiko_docs,cisco_ios}.
+
+\subsubsection{Configuration SSH du routeur}
+
+La configuration du service SSH est réalisée sur le routeur Cisco afin d'autoriser les connexions distantes authentifiées \cite{rfc4253,cisco_ios}.
+
+Les paramètres nécessaires sont configurés puis vérifiés avant de procéder à l'intégration avec Netmiko.
+
+\subsubsection{Validation de la connexion SSH}
+
+Une première connexion SSH est réalisée manuellement afin de vérifier que le routeur accepte correctement les connexions provenant du serveur Ubuntu.
+
+Cette validation permet de distinguer les éventuels problèmes liés à la configuration réseau ou au service SSH des problèmes qui pourraient être introduits ultérieurement par Netmiko.
+
+\subsection{Installation et configuration de Netmiko}
+
+Netmiko est une bibliothèque Python spécialisée dans l'automatisation des équipements réseau. Elle permet notamment d'établir des connexions SSH avec des équipements Cisco et d'exécuter automatiquement des commandes de configuration \cite{netmiko_docs}.
+
+Dans le cadre du projet ANSDS, Netmiko constitue l'interface entre le moteur logiciel développé en Python et le routeur Cisco.
+
+\subsubsection{Installation de la bibliothèque}
+
+La bibliothèque Netmiko est installée dans l'environnement Python utilisé pour le projet.
+
+Une fois l'installation terminée, une vérification est effectuée afin de s'assurer que la bibliothèque peut être importée correctement par les scripts Python.
+
+\subsubsection{Premier test de connexion}
+
+Un premier script est développé afin de vérifier la capacité de Netmiko à établir une session SSH avec le routeur Cisco \cite{netmiko_docs}.
+
+Cette étape permet de valider les paramètres de connexion, notamment l'adresse IP du routeur, le nom d'utilisateur, le mot de passe ainsi que le type d'équipement Cisco.
+
+\subsubsection{Récupération automatique des informations du routeur}
+
+Après validation de la connexion, le script est utilisé pour exécuter automatiquement des commandes de consultation sur le routeur.
+
+Cette fonctionnalité confirme que le programme Python dispose des droits nécessaires pour interagir avec l'équipement et constitue la base de la future automatisation des ACL.
+
+\subsection{Développement du module Cisco}
+
+Afin de conserver une architecture modulaire, les opérations relatives au routeur Cisco sont regroupées dans un module Python indépendant nommé \texttt{cisco\_acl\_manager.py}.
+
+\subsubsection{Architecture modulaire}
+
+Le module Cisco est séparé du moteur de détection et du module Telegram. Cette organisation permet de conserver une séparation claire des responsabilités :
+
+\begin{itemize}
+    \item Scapy assure la capture et l'analyse du trafic \cite{scapy_docs} ;
+    \item le moteur de détection identifie les comportements suspects ;
+    \item Telegram assure la notification ;
+    \item Netmiko assure la communication avec le routeur \cite{netmiko_docs} ;
+    \item le module Cisco assure la gestion des ACL \cite{cisco_ios}.
+\end{itemize}
+
+Cette architecture facilite la maintenance du système et permet de faire évoluer chaque composant indépendamment.
+
+\subsubsection{Création dynamique d'une ACL}
+
+Lorsqu'une adresse IP malveillante est identifiée, le module Cisco peut générer dynamiquement une règle \texttt{ACL} correspondant à cette adresse \cite{cisco_ios}.
+
+L'adresse IP détectée par le moteur de sécurité est transmise au module Cisco, qui construit ensuite la commande nécessaire à l'application de la règle sur le routeur.
+
+Cette approche permet d'éviter la configuration manuelle des adresses bloquées et constitue le principe central de la réponse automatique du système.
+
+\subsubsection{Suppression automatique d'une ACL}
+
+Le mécanisme de blocage est conçu pour être temporaire. Après expiration de la durée configurée, le module Cisco supprime automatiquement la règle précédemment créée.
+
+Cette fonctionnalité évite qu'une ACL temporaire reste active indéfiniment et permet au réseau de revenir automatiquement à son état initial.
+
+\subsection{Gestion des exceptions}
+
+L'automatisation d'un équipement réseau nécessite également une gestion appropriée des erreurs susceptibles de survenir lors de la communication.
+
+\subsubsection{Gestion des erreurs de communication}
+
+Les erreurs de connexion, les problèmes d'authentification ou les indisponibilités temporaires du routeur peuvent empêcher l'exécution correcte d'une commande.
+
+Le module Cisco doit donc intercepter ces exceptions afin d'éviter l'arrêt brutal du programme principal.
+
+\subsubsection{Utilisation des blocs \texttt{try}, \texttt{except} et \texttt{finally}}
+
+Les blocs \texttt{try}, \texttt{except} et \texttt{finally} permettent de séparer l'exécution normale du traitement des erreurs et des opérations devant être réalisées systématiquement lors de la fermeture de la connexion.
+
+Cette organisation améliore la robustesse du système et garantit que les ressources utilisées lors de la communication avec le routeur sont correctement libérées.
+
+\subsubsection{Validation du mécanisme de gestion des exceptions}
+
+Des tests sont réalisés afin de vérifier le comportement du module en cas d'erreur de communication avec le routeur.
+
+La validation confirme que les exceptions sont correctement interceptées et que le moteur principal peut continuer son fonctionnement sans interruption imprévue.
+
+\subsection{Intégration avec le moteur de détection}
+
+Après validation indépendante du module Cisco, celui-ci est intégré au moteur de détection.
+
+\subsubsection{Transmission de l'adresse IP détectée}
+
+Lorsqu'un comportement suspect est confirmé, l'adresse IP source identifiée par le moteur de détection est transmise au module Cisco.
+
+Cette information constitue l'élément principal utilisé pour construire dynamiquement la règle ACL de blocage.
+
+\subsubsection{Enchaînement automatique des modules}
+
+L'intégration permet désormais d'obtenir une première chaîne automatisée :
+
+\begin{center}
+\textbf{Détection SSH $\rightarrow$ Alerte Telegram $\rightarrow$ Netmiko $\rightarrow$ ACL Cisco}
+\end{center}
+
+Le moteur de détection identifie l'événement, Telegram informe l'administrateur et Netmiko applique automatiquement la mesure de protection sur le routeur Cisco.
+
+\subsubsection{Architecture finale du système}
+
+À l'issue de cette phase, les différents composants développés sont interconnectés tout en conservant leur séparation fonctionnelle.
+
+Le moteur de détection est chargé de l'analyse du trafic, le module Telegram assure la notification et le module Cisco réalise la réponse réseau.
+
+Cette architecture constitue la base de l'évolution future vers une détection multi-indicateurs et une réponse automatisée plus avancée.
+
+\subsection{Validation expérimentale}
+
+Une série de tests est réalisée afin de valider progressivement l'ensemble du mécanisme de réponse automatique.
+
+Les validations portent notamment sur :
+
+\begin{itemize}
+    \item la connexion SSH au routeur Cisco ;
+    \item l'installation et le fonctionnement de Netmiko ;
+    \item l'exécution automatique de commandes ;
+    \item la création dynamique d'une ACL ;
+    \item le blocage de l'adresse IP détectée ;
+    \item la suppression automatique de l'ACL ;
+    \item la gestion des erreurs de communication ;
+    \item l'intégration avec le moteur de détection ;
+    \item l'enchaînement entre la détection, la notification et la réponse.
+\end{itemize}
+
+Les différents essais permettent de vérifier que l'adresse IP détectée peut être transmise automatiquement au module Cisco et utilisée pour appliquer la règle de blocage correspondante.
+
+\section{Analyse des résultats}
+
+Les expérimentations réalisées montrent que l'intégration de Telegram et de Netmiko permet de transformer progressivement le moteur de détection en un système capable non seulement d'identifier une activité suspecte, mais également d'engager une réponse automatisée.
+
+La séparation des responsabilités entre les différents modules constitue un résultat important de cette phase. Le moteur de détection reste consacré à l'analyse du trafic, tandis que les modules Telegram et Cisco assurent respectivement la notification et la réponse réseau.
+
+L'utilisation de Netmiko permet également de supprimer la nécessité d'intervenir manuellement sur le routeur Cisco après chaque détection. L'adresse IP identifiée par le moteur peut être transmise directement au module Cisco afin de générer la règle de filtrage correspondante.
+
+La suppression automatique de l'ACL constitue également une fonctionnalité importante. Le blocage n'est pas permanent et le réseau peut revenir automatiquement à son état initial après expiration de la durée configurée.
+
+La chaîne de traitement obtenue à l'issue de cette phase peut ainsi être résumée comme suit :
+
+\begin{center}
+\textbf{Détection $\rightarrow$ Notification $\rightarrow$ Réponse automatique $\rightarrow$ Blocage temporaire $\rightarrow$ Suppression de l'ACL}
+\end{center}
+
+Cette architecture prépare également l'évolution du système vers une détection multi-indicateurs, qui sera développée dans la phase suivante.
 
 \section{Conclusion}
 
-Cette phase a permis de développer le premier mécanisme de réponse du système Automated Network Self-Defense System.
+Cette phase a permis de faire évoluer le système ANSDS d'un moteur de détection capable d'identifier des tentatives SSH vers une architecture intégrant les premiers mécanismes de notification et de réponse automatique.
 
-À partir du moteur de détection SSH développé avec Scapy, le système est désormais capable de transmettre automatiquement une notification détaillée dès qu'un comportement compatible avec une attaque par force brute est identifié.
+Le système est désormais capable de détecter un comportement suspect, d'informer automatiquement l'administrateur via Telegram et d'interagir avec un routeur Cisco à l'aide de Netmiko.
 
-Les différentes fonctionnalités développées comprennent la création d'un bot Telegram, la communication avec Telegram Bot API, le développement d'un module Python réutilisable, l'intégration de ce module au moteur de détection ainsi que la génération d'une notification professionnelle contenant toutes les informations nécessaires à l'analyse de l'incident.
+L'intégration du module Cisco permet d'appliquer dynamiquement une ACL destinée à bloquer l'adresse IP identifiée. Le caractère temporaire du blocage ainsi que la suppression automatique de l'ACL permettent de compléter le cycle de protection sans intervention manuelle.
 
-Les validations expérimentales réalisées démontrent le bon fonctionnement de l'ensemble du sous-système de notification ainsi que la robustesse de son intégration avec le moteur de détection.
+La séparation des responsabilités entre Scapy, le moteur de détection, Telegram, Netmiko et le module de gestion Cisco fournit une architecture modulaire et évolutive.
 
-Cette nouvelle capacité constitue une étape majeure dans la construction de l'Automated Network Self-Defense System. Le système ne se limite désormais plus à détecter une activité suspecte, mais devient capable d'informer automatiquement l'administrateur en temps réel.
-
-La phase suivante sera consacrée au développement du module de réponse automatique basé sur Netmiko. Celui-ci exploitera directement les informations générées par le moteur de détection et le système de notification afin de configurer automatiquement des listes de contrôle d'accès (ACL) sur le routeur Cisco et d'isoler dynamiquement les adresses IP malveillantes.
+Cette phase constitue ainsi une étape essentielle vers l'objectif final d'un système d'auto-défense réseau capable de détecter plusieurs catégories de comportements malveillants, de corréler les événements et d'appliquer automatiquement une réponse adaptée.

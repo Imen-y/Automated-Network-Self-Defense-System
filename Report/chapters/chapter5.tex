@@ -1,10 +1,12 @@
+\chapter{Intégration et automatisation de la réponse sur le routeur Cisco}
+
 \section{Introduction}
 
 Après le développement du moteur de détection des attaques SSH présenté dans le chapitre précédent ainsi que l'intégration des notifications automatiques via Telegram, l'étape suivante du projet consiste à mettre en œuvre un mécanisme de réponse automatique capable de neutraliser immédiatement une source d'attaque détectée.
 
 L'objectif de cette phase est de connecter le système \textit{Automated Network Self-Defense System (ANSDS)} à un routeur Cisco IOS afin d'automatiser l'application de contre-mesures réseau. Contrairement à une approche reposant uniquement sur la génération d'alertes, le système développé est désormais capable d'agir directement sur l'infrastructure réseau en créant dynamiquement une liste de contrôle d'accès (\textit{Access Control List} -- ACL) destinée à bloquer l'adresse IP de l'attaquant.
 
-Pour réaliser cette automatisation, la bibliothèque Python \textit{Netmiko} a été retenue. Cette bibliothèque permet d'établir des connexions SSH sécurisées avec des équipements réseau tout en simplifiant l'exécution de commandes Cisco IOS. Son intégration facilite le développement d'un module réutilisable capable d'administrer automatiquement le routeur sans intervention humaine.
+Pour réaliser cette automatisation, la bibliothèque Python \textit{Netmiko} a été retenue \cite{netmiko_docs}. Cette bibliothèque permet d'établir des connexions SSH sécurisées avec des équipements réseau tout en simplifiant l'exécution de commandes Cisco IOS \cite{netmiko_docs}. Son intégration facilite le développement d'un module réutilisable capable d'administrer automatiquement le routeur sans intervention humaine.
 
 Le développement a été réalisé de manière progressive afin de garantir la fiabilité de chaque composant. Les différentes étapes comprennent la préparation du routeur Cisco pour les connexions SSH, la validation des communications entre le serveur Ubuntu et le routeur, le développement du module Cisco, l'ajout d'une gestion robuste des exceptions, puis l'intégration complète avec le moteur de détection développé lors de la phase précédente.
 
@@ -51,17 +53,17 @@ Les objectifs principaux sont les suivants :
 
 Avant de développer le mécanisme de réponse automatique, il a été nécessaire de préparer le routeur Cisco afin qu'il puisse accepter des connexions SSH provenant du serveur Ubuntu.
 
-Cette étape constitue un prérequis indispensable au fonctionnement du module développé avec Netmiko. En effet, cette bibliothèque s'appuie sur le protocole SSH pour établir une connexion distante avec les équipements réseau et exécuter automatiquement des commandes Cisco IOS.
+Cette étape constitue un prérequis indispensable au fonctionnement du module développé avec Netmiko. En effet, cette bibliothèque s'appuie sur le protocole SSH pour établir une connexion distante avec les équipements réseau et exécuter automatiquement des commandes Cisco IOS \cite{netmiko_docs,rfc4253,cisco_ios}.
 
 La préparation du routeur comprend la configuration du service SSH ainsi que la validation d'une première connexion distante depuis le serveur Ubuntu. Ces vérifications permettent de garantir que l'environnement est correctement configuré avant de commencer le développement du module de réponse automatique.
 
 \subsection{Configuration SSH du routeur}
 
-Le routeur Cisco a été configuré afin d'autoriser les connexions SSH sécurisées.
+Le routeur Cisco a été configuré afin d'autoriser les connexions SSH sécurisées \cite{rfc4253,cisco_ios}.
 
-Cette configuration comprend notamment la définition du nom de domaine, la création d'un utilisateur local, la génération d'une paire de clés RSA ainsi que l'activation du protocole SSH version 2.
+Cette configuration comprend notamment la définition du nom de domaine, la création d'un utilisateur local, la génération d'une paire de clés RSA ainsi que l'activation du protocole SSH version 2 \cite{cisco_ios}.
 
-Ces paramètres permettent au routeur d'accepter des connexions d'administration distantes tout en bénéficiant des mécanismes de sécurité offerts par le protocole SSH.
+Ces paramètres permettent au routeur d'accepter des connexions d'administration distantes tout en bénéficiant des mécanismes de sécurité offerts par le protocole SSH \cite{rfc4253,cisco_ios}.
 
 La Figure~\ref{fig:manual_ssh_connection} présente une connexion SSH réussie entre le serveur Ubuntu et le routeur Cisco.
 
@@ -86,7 +88,7 @@ Cette étape est essentielle, car l'ensemble des opérations de réponse automat
 
 Après avoir validé la communication SSH entre le serveur Ubuntu et le routeur Cisco, l'étape suivante consiste à intégrer une bibliothèque Python capable d'automatiser les interactions avec les équipements réseau.
 
-Dans le cadre du projet ANSDS, la bibliothèque \textit{Netmiko} a été retenue en raison de sa simplicité d'utilisation et de sa compatibilité avec les équipements Cisco IOS. Cette bibliothèque permet d'établir des connexions SSH, d'exécuter des commandes de supervision ou de configuration et de récupérer automatiquement les informations retournées par le routeur.
+Dans le cadre du projet ANSDS, la bibliothèque \textit{Netmiko} a été retenue en raison de sa simplicité d'utilisation et de sa compatibilité avec les équipements Cisco IOS. Cette bibliothèque permet d'établir des connexions SSH, d'exécuter des commandes de supervision ou de configuration et de récupérer automatiquement les informations retournées par le routeur \cite{netmiko_docs}.
 
 Avant de développer le module de réponse automatique, plusieurs validations ont été réalisées afin de vérifier le bon fonctionnement de Netmiko ainsi que la communication entre Python et le routeur Cisco.
 
@@ -111,7 +113,7 @@ La Figure~\ref{fig:netmiko_installation} présente l'installation et la validati
 
 Une fois Netmiko installé, un premier script de validation a été développé afin de vérifier la capacité de Python à établir une connexion SSH avec le routeur Cisco.
 
-Ce script utilise la fonction \texttt{ConnectHandler()} de Netmiko afin d'ouvrir une session SSH en utilisant les paramètres de connexion du routeur. L'objectif de cette première expérimentation est de confirmer que les échanges entre le serveur Ubuntu et le routeur Cisco peuvent être automatisés sans intervention manuelle.
+Ce script utilise la fonction \texttt{ConnectHandler()} de Netmiko afin d'ouvrir une session SSH en utilisant les paramètres de connexion du routeur \cite{netmiko_docs}. L'objectif de cette première expérimentation est de confirmer que les échanges entre le serveur Ubuntu et le routeur Cisco peuvent être automatisés sans intervention manuelle.
 
 La réussite de cette connexion constitue une étape essentielle avant le développement des fonctions de configuration automatique qui seront intégrées au système ANSDS.
 
@@ -130,7 +132,7 @@ Après la validation de la connexion SSH, le script de test a été enrichi afin
 
 Les commandes exécutées permettent notamment d'obtenir le nom d'hôte du routeur, la version du système Cisco IOS ainsi que la liste des interfaces réseau configurées.
 
-Cette étape démontre que Netmiko ne se limite pas à l'établissement d'une connexion SSH, mais permet également d'automatiser l'exécution de commandes d'administration sur les équipements Cisco. Cette capacité constitue la base des futures opérations de configuration réalisées par le module de réponse automatique.
+Cette étape démontre que Netmiko ne se limite pas à l'établissement d'une connexion SSH, mais permet également d'automatiser l'exécution de commandes d'administration sur les équipements Cisco \cite{netmiko_docs}. Cette capacité constitue la base des futures opérations de configuration réalisées par le module de réponse automatique.
 
 La Figure~\ref{fig:router_information_retrieval} présente les informations récupérées automatiquement.
 
@@ -147,13 +149,13 @@ Après la validation de la communication entre Python et le routeur Cisco, l'ét
 
 Afin de garantir une architecture modulaire et facilement maintenable, toutes les fonctionnalités liées au routeur Cisco ont été regroupées dans un module indépendant nommé \texttt{cisco\_acl\_manager.py}. Cette approche permet de séparer les opérations de détection des opérations de réponse automatique tout en facilitant la réutilisation du code dans les phases suivantes du projet.
 
-Le module développé est responsable de l'établissement de la connexion SSH avec le routeur Cisco, de l'exécution des commandes de configuration, de la création et de la suppression des listes de contrôle d'accès (ACL), ainsi que de la gestion des erreurs pouvant survenir lors des communications avec l'équipement réseau.
+Le module développé est responsable de l'établissement de la connexion SSH avec le routeur Cisco, de l'exécution des commandes de configuration, de la création et de la suppression des listes de contrôle d'accès (ACL), ainsi que de la gestion des erreurs pouvant survenir lors des communications avec l'équipement réseau \cite{netmiko_docs,cisco_ios}.
 
 \subsection{Architecture modulaire}
 
 Le projet ANSDS repose sur une architecture modulaire dans laquelle chaque composant possède une responsabilité bien définie.
 
-Le moteur de détection développé avec Scapy est chargé d'observer le trafic réseau et d'identifier les comportements suspects. Le module Telegram assure l'envoi des notifications tandis que le module Cisco est responsable de la réponse automatique sur l'infrastructure réseau.
+Le moteur de détection développé avec Scapy est chargé d'observer le trafic réseau et d'identifier les comportements suspects \cite{scapy_docs}. Le module Telegram assure l'envoi des notifications tandis que le module Cisco est responsable de la réponse automatique sur l'infrastructure réseau.
 
 Cette séparation des responsabilités améliore la lisibilité du code, facilite les opérations de maintenance et permet de faire évoluer indépendamment chacun des modules du système.
 
@@ -169,7 +171,7 @@ Afin de renforcer la sécurité du projet, les paramètres de connexion du route
 
 Une fonction nommée \texttt{block\_ip()} a été développée afin de créer automatiquement une liste de contrôle d'accès sur le routeur Cisco.
 
-Cette fonction reçoit en paramètre l'adresse IP source détectée par le moteur Scapy. Elle construit ensuite les commandes Cisco IOS nécessaires à la création d'une règle de filtrage bloquant immédiatement tout trafic provenant de cette adresse.
+Cette fonction reçoit en paramètre l'adresse IP source détectée par le moteur Scapy. Elle construit ensuite les commandes Cisco IOS nécessaires à la création d'une règle de filtrage bloquant immédiatement tout trafic provenant de cette adresse \cite{cisco_ios}.
 
 La règle générée adopte le format suivant :
 
@@ -219,7 +221,7 @@ Le module Cisco intercepte les principales exceptions pouvant être générées 
 
 Une première exception, \texttt{NetmikoTimeoutException}, est déclenchée lorsque le routeur Cisco ne répond pas dans le délai prévu ou devient momentanément indisponible.
 
-Une seconde exception, \texttt{NetmikoAuthenticationException}, est levée lorsque les informations d'authentification utilisées pour établir la connexion SSH sont incorrectes.
+Une seconde exception, \texttt{NetmikoAuthenticationException}, est levée lorsque les informations d'authentification utilisées pour établir la connexion SSH sont incorrectes \cite{netmiko_docs}.
 
 Dans ces deux situations, le module affiche un message explicite permettant d'identifier rapidement l'origine du problème tout en évitant l'arrêt brutal de l'application.
 
@@ -260,7 +262,7 @@ Cette approche transforme le système développé en une véritable plateforme a
 
 \subsection{Transmission de l'adresse IP détectée}
 
-Le moteur de détection développé avec Scapy surveille en permanence le trafic SSH circulant sur le réseau.
+Le moteur de détection développé avec Scapy surveille en permanence le trafic SSH circulant sur le réseau \cite{scapy_docs}.
 
 Lorsqu'une adresse IP dépasse le seuil de tentatives de connexion défini, le détecteur identifie cette adresse comme potentiellement malveillante.
 
@@ -276,7 +278,7 @@ Le moteur Scapy détecte tout d'abord l'activité suspecte et construit le messa
 
 Ce message est ensuite transmis au module Telegram afin d'informer l'administrateur du réseau.
 
-Après l'envoi de cette notification, le module Cisco établit automatiquement une connexion SSH avec le routeur Cisco à l'aide de Netmiko puis crée dynamiquement une ACL permettant de bloquer immédiatement l'adresse IP détectée.
+Après l'envoi de cette notification, le module Cisco établit automatiquement une connexion SSH avec le routeur Cisco à l'aide de Netmiko puis crée dynamiquement une ACL permettant de bloquer immédiatement l'adresse IP détectée \cite{netmiko_docs,cisco_ios}.
 
 Cette séquence assure une transition entièrement automatique entre la phase de détection et la phase de réponse, réduisant ainsi considérablement le temps de réaction face à une attaque.
 
@@ -399,13 +401,13 @@ La Figure~\ref{fig:complete_detection_response} présente cette validation final
 
 Les différentes expérimentations réalisées au cours de cette phase montrent que l'ensemble des objectifs fixés a été atteint.
 
-La préparation du routeur Cisco et la validation des communications SSH ont permis d'établir une infrastructure fiable pour les opérations d'administration automatique. L'utilisation de la bibliothèque Netmiko a ensuite facilité le développement d'un module capable d'exécuter automatiquement des commandes Cisco IOS depuis le serveur Ubuntu.
+La préparation du routeur Cisco et la validation des communications SSH ont permis d'établir une infrastructure fiable pour les opérations d'administration automatique. L'utilisation de la bibliothèque Netmiko a ensuite facilité le développement d'un module capable d'exécuter automatiquement des commandes Cisco IOS depuis le serveur Ubuntu \cite{netmiko_docs,cisco_ios}.
 
 Le module \texttt{cisco\_acl\_manager.py} développé durant cette phase assure la création et la suppression dynamiques des listes de contrôle d'accès tout en conservant une architecture modulaire et facilement réutilisable. La séparation entre les fonctions de détection, de notification et de réponse améliore la lisibilité du code et simplifie les futures évolutions du projet.
 
 Les mécanismes de gestion des exceptions intégrés au module Cisco renforcent également la robustesse du système. Les différentes expérimentations ont montré que les erreurs de communication ou d'authentification sont correctement prises en charge sans provoquer l'arrêt du moteur de détection.
 
-Enfin, l'intégration du module Cisco avec le moteur Scapy et le module Telegram permet désormais d'obtenir une chaîne complète de détection et de réponse automatique. Dès qu'une activité suspecte est détectée, le système génère une alerte, informe l'administrateur puis applique immédiatement une contre-mesure sur le routeur Cisco en créant dynamiquement une ACL de blocage.
+Enfin, l'intégration du module Cisco avec le moteur Scapy et le module Telegram permet désormais d'obtenir une chaîne complète de détection et de réponse automatique \cite{scapy_docs}. Dès qu'une activité suspecte est détectée, le système génère une alerte, informe l'administrateur puis applique immédiatement une contre-mesure sur le routeur Cisco en créant dynamiquement une ACL de blocage.
 
 Les résultats obtenus démontrent que l'architecture développée répond aux objectifs fixés pour cette phase et constitue une base solide pour les prochaines évolutions du projet ANSDS.
 

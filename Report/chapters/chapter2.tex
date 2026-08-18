@@ -4,7 +4,7 @@
 
 Avant de développer le système \textbf{Automated Network Self-Defense System (ANSDS)}, il a été indispensable de concevoir une plateforme de test permettant de reproduire un environnement réseau réaliste et entièrement maîtrisé. Ce laboratoire constitue la base expérimentale du projet et permet de développer, de tester et de valider chaque composant du système dans des conditions proches d'une infrastructure d'entreprise.
 
-L'environnement a été réalisé à l'aide de GNS3 en intégrant un routeur Cisco IOS, un commutateur Ethernet, un serveur Ubuntu, une machine Kali Linux ainsi qu'un accès Internet via un mécanisme de traduction d'adresses réseau (Network Address Translation -- NAT). Cette architecture offre un environnement adapté à l'étude du protocole SSH, à la capture des paquets réseau ainsi qu'au développement des mécanismes de détection et de réponse automatique.
+L'environnement a été réalisé à l'aide de GNS3 \cite{gns3_docs} en intégrant un routeur Cisco IOS \cite{cisco_ios}, un commutateur Ethernet, un serveur Ubuntu, une machine Kali Linux ainsi qu'un accès Internet via un mécanisme de traduction d'adresses réseau (Network Address Translation -- NAT). Cette architecture offre un environnement adapté à l'étude du protocole SSH \cite{rfc4253}, à la capture des paquets réseau ainsi qu'au développement des mécanismes de détection et de réponse automatique.
 
 Avant de commencer les phases de détection d'attaques, l'ensemble des équipements a été configuré puis validé afin de garantir le bon fonctionnement des communications réseau.
 
@@ -25,7 +25,7 @@ La mise en place du laboratoire poursuit plusieurs objectifs techniques indispen
 
 \section{Architecture générale du laboratoire}
 
-L'architecture du laboratoire a été développée sous GNS3 afin de reproduire une infrastructure réseau simple, stable et facilement reproductible.
+L'architecture du laboratoire a été développée sous GNS3 \cite{gns3_docs} afin de reproduire une infrastructure réseau simple, stable et facilement reproductible.
 
 Elle est constituée des éléments suivants :
 
@@ -56,7 +56,7 @@ Les sous-sections suivantes présentent le rôle de chaque équipement ainsi que
 
 \subsection{Routeur Cisco}
 
-Le routeur Cisco constitue l'élément central de l'architecture réseau. Il assure le routage des paquets entre le réseau local et Internet, ainsi que la mise en œuvre du mécanisme de traduction d'adresses (NAT). Il jouera également un rôle essentiel dans les phases suivantes du projet, puisqu'il sera chargé d'appliquer automatiquement des listes de contrôle d'accès (ACL) afin de bloquer les adresses IP identifiées comme malveillantes.
+Le routeur Cisco constitue l'élément central de l'architecture réseau. Il assure le routage des paquets entre le réseau local et Internet, ainsi que la mise en œuvre du mécanisme de traduction d'adresses (NAT). Il jouera également un rôle essentiel dans les phases suivantes du projet, puisqu'il sera chargé d'appliquer automatiquement des listes de contrôle d'accès (ACL) afin de bloquer les adresses IP identifiées comme malveillantes \cite{cisco_ios}.
 
 Le routeur utilisé est basé sur la plateforme Cisco 7200 et dispose de plusieurs interfaces FastEthernet permettant d'interconnecter le réseau local au nœud NAT de GNS3.
 
@@ -141,7 +141,7 @@ L'ensemble des machines du réseau local appartient au sous-réseau \texttt{192.
 
 \section{Configuration NAT}
 
-Afin de permettre aux machines virtuelles du laboratoire d'accéder au réseau Internet, une traduction d'adresses réseau (\textit{Network Address Translation} -- NAT) a été configurée sur le routeur Cisco.
+Afin de permettre aux machines virtuelles du laboratoire d'accéder au réseau Internet, une traduction d'adresses réseau (\textit{Network Address Translation} -- NAT) a été configurée sur le routeur Cisco \cite{cisco_ios}.
 
 Le mécanisme retenu est le \textit{Port Address Translation} (PAT), également appelé surcharge NAT (\textit{NAT Overload}). Cette technique permet à plusieurs machines du réseau privé de partager une seule adresse IP publique correspondant à l'interface connectée au réseau externe.
 
@@ -168,7 +168,7 @@ Ces vérifications concernent notamment la version du système Cisco IOS ainsi q
 
 \subsection{Version Cisco IOS}
 
-Le routeur utilisé dans le laboratoire exécute le système d'exploitation Cisco IOS. La vérification de la version installée permet de confirmer la compatibilité des fonctionnalités utilisées dans le cadre du projet, notamment le routage IP, la traduction d'adresses (NAT) et les listes de contrôle d'accès (ACL).
+Le routeur utilisé dans le laboratoire exécute le système d'exploitation Cisco IOS. La vérification de la version installée permet de confirmer la compatibilité des fonctionnalités utilisées dans le cadre du projet, notamment le routage IP, la traduction d'adresses (NAT) et les listes de contrôle d'accès (ACL) \cite{cisco_ios}.
 
 La Figure~\ref{fig:ios-version} présente les informations relatives à la version du système Cisco IOS.
 
@@ -258,7 +258,7 @@ Les différents tests de connectivité réalisés confirment le bon fonctionneme
 
 \section{Validation du service SSH}
 
-Le protocole Secure Shell (SSH) constitue l'élément central des expérimentations réalisées dans le cadre du projet ANSDS. Avant de développer les mécanismes de détection et de réponse automatique, il est indispensable de vérifier que le service SSH est correctement installé, actif et accessible depuis les autres équipements du laboratoire.
+Le protocole Secure Shell (SSH) constitue l'élément central des expérimentations réalisées dans le cadre du projet ANSDS \cite{rfc4253}. Avant de développer les mécanismes de détection et de réponse automatique, il est indispensable de vérifier que le service SSH est correctement installé, actif et accessible depuis les autres équipements du laboratoire.
 
 Plusieurs vérifications successives ont été réalisées afin de valider le bon fonctionnement du service.
 
@@ -292,7 +292,7 @@ Comme l'illustre la Figure~\ref{fig:ssh-status}, le service est correctement dé
 
 Le fonctionnement du serveur SSH a également été validé en vérifiant que le port TCP 22 est en état d'écoute.
 
-La Figure~\ref{fig:ssh-port} confirme que le service écoute correctement sur le port standard utilisé par le protocole SSH.
+La Figure~\ref{fig:ssh-port} confirme que le service écoute correctement sur le port standard utilisé par le protocole SSH \cite{rfc4253}.
 
 \begin{figure}[htbp]
     \centering
@@ -322,4 +322,4 @@ Au cours de ce chapitre, un laboratoire réseau complet a été conçu et config
 
 Les différentes étapes de configuration ont été validées par des tests de connectivité réseau et par la vérification du fonctionnement du service SSH. Ces résultats confirment que l'environnement expérimental est pleinement opérationnel et constitue une base fiable pour le développement des mécanismes de détection des attaques et de réponse automatique.
 
-Le chapitre suivant sera consacré à l'analyse du trafic SSH à l'aide de Wireshark. Cette étude permettra de comprendre le déroulement d'une connexion SSH, d'identifier les paquets échangés et de préparer la mise en œuvre des mécanismes de détection utilisés dans le système ANSDS.
+Le chapitre suivant sera consacré à l'analyse du trafic SSH à l'aide de Wireshark \cite{wireshark_docs}. Cette étude permettra de comprendre le déroulement d'une connexion SSH, d'identifier les paquets échangés et de préparer la mise en œuvre des mécanismes de détection utilisés dans le système ANSDS.

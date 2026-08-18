@@ -1,0 +1,13 @@
+2026-08-17 17:45:04,324 | INFO | EVENT=NMAP_DETECTED | source_ip=192.168.20.20 | destination_ip=192.168.10.10 | scan_type=NMAP_SYN_SCAN | distinct_ports=10 | time_window=2s
+2026-08-17 17:45:09,411 | INFO | EVENT=SSH_CORRELATION_CONFIRMED | source_ip=192.168.20.20 | destination_ip=192.168.10.10 | scan_type=NMAP_SYN_SCAN | distinct_ports=10 | correlation_window=30s
+2026-08-17 17:45:10,000 | INFO | EVENT=TELEGRAM_ALERT_SENT | source_ip=192.168.20.20 | attack_type=Nmap + SSH Correlated
+2026-08-17 17:45:11,516 | INFO | EVENT=IP_BLOCKED | source_ip=192.168.20.20 | duration=60s | acl=ANSDS-BLOCK | interface=FastEthernet1/1
+2026-08-17 17:45:11,516 | INFO | EVENT=TEMPORARY_BLOCK_SCHEDULED | source_ip=192.168.20.20 | duration=60s
+2026-08-17 18:16:23,852 | INFO | EVENT=NMAP_DETECTED | source_ip=192.168.20.20 | destination_ip=192.168.10.10 | scan_type=NMAP_SYN_SCAN | distinct_ports=10 | time_window=2s
+2026-08-17 18:18:20,403 | INFO | EVENT=NMAP_DETECTED | source_ip=192.168.20.20 | destination_ip=192.168.10.10 | scan_type=NMAP_SYN_SCAN | distinct_ports=10 | time_window=2s
+2026-08-17 18:18:26,932 | INFO | EVENT=SSH_CORRELATION_CONFIRMED | source_ip=192.168.20.20 | destination_ip=192.168.10.10 | scan_type=NMAP_SYN_SCAN | distinct_ports=10 | correlation_window=30s
+2026-08-17 18:18:27,588 | INFO | EVENT=TELEGRAM_ALERT_SENT | source_ip=192.168.20.20 | attack_type=Nmap + SSH Correlated
+2026-08-17 18:18:28,916 | INFO | EVENT=IP_BLOCKED | source_ip=192.168.20.20 | duration=60s | acl=ANSDS-BLOCK | interface=FastEthernet1/1
+2026-08-17 18:18:28,916 | INFO | EVENT=TEMPORARY_BLOCK_SCHEDULED | source_ip=192.168.20.20 | duration=60s
+2026-08-17 18:19:28,917 | INFO | EVENT=TEMPORARY_BLOCK_EXPIRED | source_ip=192.168.20.20 | acl=ANSDS-BLOCK
+2026-08-17 18:19:30,337 | INFO | EVENT=IP_UNBLOCKED | source_ip=192.168.20.20 | acl=ANSDS-BLOCK | interface=FastEthernet1/1

@@ -23,10 +23,10 @@ The project is developed progressively using a modular architecture, allowing ea
 | Phase | Description | Status |
 |--------|-------------|--------|
 | Phase 1 | Network Infrastructure | Completed |
-| Phase 2 | SSH Detection Engine | Completed |
+| Phase 2 | SSH Traffic Analysis | Completed |
 | Phase 3 | Telegram Notification System | Completed |
-| Phase 4 | Cisco Automatic Response | Planned |
-| Phase 5 | Detection Improvements | Planned |
+| Phase 4 | Cisco Automatic Response | Completed |
+| Phase 5 | Advanced Attack Detection | Completed |
 | Phase 6 | System Integration | Planned |
 | Phase 7 | Final Validation | Planned |
 
@@ -35,35 +35,42 @@ The project is developed progressively using a modular architecture, allowing ea
 ## System Architecture
 
 ```
-Attacker
-    │
-    ▼
-Scapy Packet Capture
-    │
-    ▼
-SSH Detection Engine
-    │
-    ▼
-Telegram Notification Module
-    │
-    ▼
-Netmiko Automation
-    │
-    ▼
-Cisco Router
-    │
-    ▼
-Access Control List (ACL)
-    │
-    ▼
-Automated Network Self-Defense System
+                    Network Traffic
+                          │
+                          ▼
+                  Scapy Packet Capture
+                          │
+                          ▼
+                Attack Detection Engine
+                          │
+             ┌────────────┴────────────┐
+             │                         │
+        SSH Detection            Nmap Scan Detection
+             │                         │
+             └────────────┬────────────┘
+                          ▼
+                  Attack Validation
+                          │
+              ┌───────────┴───────────┐
+              │                       │
+              ▼                       ▼
+       Telegram Alert          Netmiko Response
+                                      │
+                                      ▼
+                                Cisco Router
+                                      │
+                                      ▼
+                                    ACL
+                                      │
+                                      ▼
+                              Attacker Blocked
 ```
 
 ---
 
 ## Project Structure
 
-```
+```text
 Automated-Network-Self-Defense-System/
 
 ├── Docs/
@@ -72,8 +79,15 @@ Automated-Network-Self-Defense-System/
 ├── Report/
 ├── Resources/
 ├── Scripts/
+│   ├── Cisco/
+│   │   └── cisco_acl_manager.py
 │   ├── Detection/
+│   │   ├── nmap_detector.py
+│   │   └── ssh_detector.py
+│   ├── Logging/
+│   │   └── ansds_logger.py
 │   └── Telegram/
+│       └── telegram_notifier.py
 ├── README.md
 └── .gitignore
 ```
@@ -86,9 +100,11 @@ Automated-Network-Self-Defense-System/
 - Scapy
 - Requests
 - Telegram Bot API
-- Netmiko (planned)
+- Netmiko
 - Cisco IOS
 - GNS3
+- Wireshark
+- Nmap
 - Ubuntu Server
 - Kali Linux
 - Git
@@ -105,22 +121,31 @@ Automated-Network-Self-Defense-System/
 - Threshold-based SSH brute-force detection
 - Telegram Bot integration
 - Automatic security notifications
-- Modular notification subsystem
+- Cisco router automation
+- Dynamic ACL-based attacker blocking
+- Netmiko-based network device control
+- Nmap scan detection
+- SYN scan detection
+- FIN scan detection
+- NULL scan detection
+- Xmas scan detection
+- Advanced attack detection
 
 ---
 
 ## Upcoming Features
 
-- Cisco router automation
-- Automatic ACL generation
-- Dynamic attacker blocking
-- Hybrid detection improvements
 - Complete ANSDS integration
+- Correlation of multiple detection indicators
+- Extended attack detection
+- Complete system validation
 
 ---
 
-## Author
+## Project Context
 
-Final-Year Engineering Project
+This project was developed as part of an engineering internship.
 
 Automated Network Self-Defense System (ANSDS)
+
+The Automated Network Self-Defense System (ANSDS) is an engineering internship project designed to automatically detect SSH brute-force attacks, notify the network administrator in real time, and automatically respond by blocking malicious hosts on a Cisco router.

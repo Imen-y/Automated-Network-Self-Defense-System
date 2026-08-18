@@ -92,9 +92,7 @@ Status           : Detection threshold reached
 
         if send_notification(alert_message):
             print("[+] Telegram notification sent successfully.")
-
             block_ip(ip_src)
-
         else:
             print("[-] Failed to send Telegram notification.")
 

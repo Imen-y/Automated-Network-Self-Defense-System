@@ -6,7 +6,7 @@ Après la mise en place de l'infrastructure réseau présentée dans le chapitre
 
 L'objectif de cette phase est de concevoir un moteur capable d'observer le trafic réseau en temps réel afin d'identifier automatiquement des comportements pouvant correspondre au début d'une attaque SSH. Contrairement aux approches reposant sur l'analyse des journaux d'authentification (\textit{logs}), le détecteur développé dans ce projet s'appuie directement sur l'observation des paquets réseau. Cette approche permet de détecter les tentatives de connexion dès leur établissement, avant même que le serveur SSH ne traite les demandes d'authentification.
 
-Pour réaliser cette détection, la bibliothèque Python \textbf{Scapy} a été retenue. Cet outil offre des fonctionnalités avancées de capture, d'analyse et de manipulation de paquets réseau tout en permettant le développement rapide d'algorithmes de détection personnalisés. Son intégration en Python facilite également l'évolution progressive du système vers des mécanismes plus avancés tels que les notifications automatiques ou le blocage dynamique des adresses IP malveillantes.
+Pour réaliser cette détection, la bibliothèque Python \textbf{Scapy} \cite{scapy_docs} a été retenue. Cet outil offre des fonctionnalités avancées de capture, d'analyse et de manipulation de paquets réseau tout en permettant le développement rapide d'algorithmes de détection personnalisés. Son intégration en Python facilite également l'évolution progressive du système vers des mécanismes plus avancés tels que les notifications automatiques ou le blocage dynamique des adresses IP malveillantes.
 
 Le développement du détecteur a été réalisé de manière incrémentale. Chaque fonctionnalité a été implémentée, testée puis validée avant de passer à l'étape suivante. Cette méthode permet de limiter les erreurs, de faciliter les phases de débogage et de garantir la fiabilité du composant développé.
 
@@ -22,13 +22,13 @@ Les objectifs principaux sont les suivants :
 
 \item mettre en place un environnement Python dédié au développement du détecteur ;
 
-\item installer et configurer la bibliothèque Scapy afin de permettre la capture des paquets réseau ;
+\item installer et configurer la bibliothèque Scapy afin de permettre la capture des paquets réseau \cite{scapy_docs} ;
 
 \item observer le trafic réseau circulant sur l'interface du serveur Ubuntu ;
 
-\item filtrer uniquement le trafic correspondant au protocole SSH (port TCP 22) ;
+\item filtrer uniquement le trafic correspondant au protocole SSH (port TCP 22) \cite{rfc4253} ;
 
-\item identifier les paquets TCP SYN représentant les nouvelles tentatives de connexion ;
+\item identifier les paquets TCP SYN représentant les nouvelles tentatives de connexion \cite{rfc793} ;
 
 \item associer chaque tentative à son adresse IP source ;
 
@@ -48,15 +48,15 @@ Les objectifs principaux sont les suivants :
 
 Avant de développer le moteur de détection, il est indispensable de comprendre précisément le fonctionnement d'une connexion SSH ainsi que les informations qui restent observables malgré le chiffrement des échanges.
 
-Cette étude préalable a été réalisée à l'aide de l'analyseur de protocoles Wireshark. L'objectif n'était pas uniquement d'observer les paquets échangés, mais surtout d'identifier les informations réellement exploitables par le futur moteur de détection développé avec Scapy.
+Cette étude préalable a été réalisée à l'aide de l'analyseur de protocoles Wireshark \cite{wireshark_docs}. L'objectif n'était pas uniquement d'observer les paquets échangés, mais surtout d'identifier les informations réellement exploitables par le futur moteur de détection développé avec Scapy \cite{scapy_docs}.
 
 L'analyse a permis de distinguer les différentes étapes de l'établissement d'une connexion SSH, d'identifier les champs réseau accessibles sans déchiffrement et de déterminer les éléments les plus pertinents pour détecter automatiquement des comportements suspects.
 
 \subsection{Établissement d'une connexion SSH}
 
-Une connexion SSH repose sur le protocole TCP. Avant tout échange de données, une connexion fiable doit être établie entre le client et le serveur à l'aide du mécanisme appelé \textit{Three-Way Handshake}.
+Une connexion SSH repose sur le protocole TCP \cite{rfc4253,rfc793}. Avant tout échange de données, une connexion fiable doit être établie entre le client et le serveur à l'aide du mécanisme appelé \textit{Three-Way Handshake}.
 
-Une fois cette connexion établie, le client et le serveur échangent leurs informations de version, négocient les algorithmes cryptographiques à utiliser, réalisent l'échange des clés puis activent le chiffrement de la communication.
+Une fois cette connexion établie, le client et le serveur échangent leurs informations de version, négocient les algorithmes cryptographiques à utiliser, réalisent l'échange des clés puis activent le chiffrement de la communication \cite{rfc4253}.
 
 À partir de cette étape, le contenu des messages devient totalement chiffré. En revanche, plusieurs informations réseau restent visibles, notamment les adresses IP, les ports TCP, les drapeaux TCP, les numéros de séquence ainsi que la fréquence des paquets échangés.
 
@@ -64,13 +64,13 @@ Ces informations constituent la principale source de données exploitée par le 
 
 \subsection{Analyse du Three-Way Handshake TCP}
 
-Le Three-Way Handshake représente la première étape de toute connexion SSH.
+Le Three-Way Handshake représente la première étape de toute connexion SSH \cite{rfc793}.
 
 Cette procédure se déroule selon trois échanges successifs :
 
 \begin{enumerate}
 
-\item le client envoie un paquet TCP SYN afin de demander l'ouverture d'une nouvelle connexion ;
+\item le client envoie un paquet TCP SYN afin de demander l'ouverture d'une nouvelle connexion \cite{rfc793} ;
 
 \item le serveur répond par un paquet TCP SYN/ACK indiquant qu'il accepte la connexion ;
 
@@ -110,11 +110,11 @@ Les Figures~\ref{fig:syn_packet}, \ref{fig:syn_ack_packet} et \ref{fig:ack_packe
 \label{fig:ack_packet}
 \end{figure}
 
-Parmi ces trois paquets, seul le paquet TCP SYN est utilisé par le moteur de détection. En effet, chaque tentative de connexion SSH débute obligatoirement par l'émission d'un paquet SYN vers le port TCP 22. L'observation de ces paquets permet donc d'identifier rapidement les nouvelles tentatives de connexion initiées par un client.
+Parmi ces trois paquets, seul le paquet TCP SYN est utilisé par le moteur de détection. En effet, chaque tentative de connexion SSH débute obligatoirement par l'émission d'un paquet SYN vers le port TCP 22 \cite{rfc793,rfc4253}. L'observation de ces paquets permet donc d'identifier rapidement les nouvelles tentatives de connexion initiées par un client.
 
 \subsection{Informations observables malgré le chiffrement}
 
-Après l'établissement de la connexion TCP, le protocole SSH procède à l'échange des informations de version, à la négociation des algorithmes cryptographiques puis à l'échange des clés de chiffrement.
+Après l'établissement de la connexion TCP, le protocole SSH procède à l'échange des informations de version, à la négociation des algorithmes cryptographiques puis à l'échange des clés de chiffrement \cite{rfc4253}.
 
 Une fois cette phase terminée, les données applicatives deviennent totalement chiffrées et leur contenu n'est plus directement exploitable.
 
@@ -126,7 +126,7 @@ Cependant, certaines informations restent toujours visibles au niveau des couche
 
 \item les ports TCP utilisés ;
 
-\item les drapeaux TCP (SYN, ACK, FIN, RST, etc.) ;
+\item les drapeaux TCP (SYN, ACK, FIN, RST, etc.) \cite{rfc793} ;
 
 \item les numéros de séquence TCP ;
 
@@ -152,7 +152,7 @@ Le développement s'est déroulé en plusieurs étapes successives, allant de la
 
 \subsection{Première capture réseau avec Scapy}
 
-La première étape du développement consiste à vérifier le bon fonctionnement de la bibliothèque Scapy sur le serveur Ubuntu.
+La première étape du développement consiste à vérifier le bon fonctionnement de la bibliothèque Scapy sur le serveur Ubuntu \cite{scapy_docs}.
 
 Un premier script Python est développé afin de capturer l'ensemble des paquets circulant sur l'interface réseau \texttt{ens33}. À ce stade, aucun filtrage n'est appliqué. L'objectif est uniquement de valider la capacité du programme à intercepter les paquets en temps réel.
 
@@ -193,7 +193,7 @@ La Figure~\ref{fig:ssh_filter} illustre le résultat obtenu après l'application
 
 \subsection{Détection des paquets TCP SYN}
 
-Une connexion SSH débute systématiquement par l'émission d'un paquet TCP SYN.
+Une connexion SSH débute systématiquement par l'émission d'un paquet TCP SYN \cite{rfc793,rfc4253}.
 
 Le moteur de détection est ensuite modifié afin d'identifier uniquement ces paquets. Les drapeaux TCP sont analysés afin de distinguer les nouvelles demandes de connexion des autres paquets composant la communication.
 
@@ -265,9 +265,9 @@ Cette approche réduit significativement les faux positifs et permet une détect
 
 Une série de tests a été réalisée afin de vérifier le bon fonctionnement du moteur de détection développé avec Scapy. Chaque fonctionnalité a été validée indépendamment avant son intégration dans le détecteur final.
 
-La première validation a consisté à vérifier la capacité de Scapy à capturer les paquets transitant sur l'interface réseau \texttt{ens33}. Après cette étape, un filtre Berkeley Packet Filter (BPF) a été appliqué afin de limiter l'observation aux seuls paquets SSH utilisant le port TCP~22.
+La première validation a consisté à vérifier la capacité de Scapy à capturer les paquets transitant sur l'interface réseau \texttt{ens33} \cite{scapy_docs}. Après cette étape, un filtre Berkeley Packet Filter (BPF) a été appliqué afin de limiter l'observation aux seuls paquets SSH utilisant le port TCP~22.
 
-Le détecteur a ensuite été configuré pour identifier exclusivement les paquets TCP SYN, correspondant aux nouvelles demandes d'établissement de connexion. Cette fonctionnalité a permis de confirmer que chaque tentative SSH pouvait être détectée dès le début de la communication.
+Le détecteur a ensuite été configuré pour identifier exclusivement les paquets TCP SYN, correspondant aux nouvelles demandes d'établissement de connexion \cite{rfc793}. Cette fonctionnalité a permis de confirmer que chaque tentative SSH pouvait être détectée dès le début de la communication.
 
 Une phase de validation supplémentaire a consisté à vérifier le mécanisme de comptage des tentatives de connexion par adresse IP. Plusieurs connexions successives ont été initiées depuis la machine Kali Linux afin de contrôler l'incrémentation correcte du compteur.
 
@@ -277,7 +277,7 @@ L'ensemble des essais a confirmé le comportement attendu du détecteur. Les ale
 
 \section{Analyse des résultats}
 
-Les expérimentations réalisées montrent que l'utilisation de Scapy constitue une solution adaptée au développement d'un moteur de détection réseau léger et facilement extensible.
+Les expérimentations réalisées montrent que l'utilisation de Scapy constitue une solution adaptée au développement d'un moteur de détection réseau léger et facilement extensible \cite{scapy_docs}.
 
 L'observation directe des paquets TCP permet de détecter les tentatives de connexion avant même que le serveur SSH ne traite les demandes d'authentification. Cette approche réduit le temps de réaction du système et facilite l'intégration de mécanismes de réponse automatique dans les phases ultérieures du projet.
 
