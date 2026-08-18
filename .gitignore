@@ -44,6 +44,7 @@ Desktop.ini
 *.out
 *.synctex.gz
 *.toc
+Report/*.pdf
 
 # GNS3 runtime files
 GNS3/**/project-files/
