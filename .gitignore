@@ -68,3 +68,5 @@ GNS3/**/*.rommon_vars
 *.out
 *.synctex.gz
 *.toc
+# Keep the sample log
+!Docs/sample-ansds.log
